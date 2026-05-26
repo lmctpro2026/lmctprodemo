@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -14,14 +15,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import type { Customer } from "@/lib/types"
 import { Loader2 } from "lucide-react"
+
+const leadSources = ["Facebook", "Carsales", "Gumtree", "Walk-in", "Referral", "Repeat customer", "Website", "Other"]
 
 interface CustomerDialogProps {
   customer?: Customer | null
@@ -37,10 +36,12 @@ export function CustomerDialog({ customer, open, onOpenChange, onSave }: Custome
     email: customer?.email || "",
     phone: customer?.phone || "",
     address: customer?.address || "",
-    license_number: customer?.license_number || "",
+    license: customer?.license || "",
     date_of_birth: customer?.date_of_birth || "",
-    type: customer?.type || "buyer",
+    interests: customer?.interests || "",
     notes: customer?.notes || "",
+    hot: customer?.hot || false,
+    lead_source: customer?.lead_source || "",
   })
 
   async function handleSubmit(e: React.FormEvent) {
@@ -52,28 +53,34 @@ export function CustomerDialog({ customer, open, onOpenChange, onSave }: Custome
 
     if (!user) {
       setLoading(false)
+      toast.error("Not signed in")
       return
     }
 
     const customerData = {
       user_id: user.id,
       name: formData.name,
-      email: formData.email || null,
-      phone: formData.phone || null,
-      address: formData.address || null,
-      license_number: formData.license_number || null,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      license: formData.license,
       date_of_birth: formData.date_of_birth || null,
-      type: formData.type as Customer["type"],
-      notes: formData.notes || null,
+      interests: formData.interests,
+      notes: formData.notes,
+      hot: formData.hot,
+      lead_source: formData.lead_source,
     }
 
-    if (customer?.id) {
-      await supabase.from("customers").update(customerData).eq("id", customer.id)
-    } else {
-      await supabase.from("customers").insert(customerData)
-    }
+    const { error } = customer?.id
+      ? await supabase.from("customers").update(customerData).eq("id", customer.id)
+      : await supabase.from("customers").insert(customerData)
 
     setLoading(false)
+    if (error) {
+      toast.error(`Failed to save customer: ${error.message}`)
+      return
+    }
+    toast.success(customer ? "Customer updated" : "Customer added")
     onSave()
   }
 
@@ -133,11 +140,11 @@ export function CustomerDialog({ customer, open, onOpenChange, onSave }: Custome
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="license_number">License Number</Label>
+              <Label htmlFor="license">License Number</Label>
               <Input
-                id="license_number"
-                value={formData.license_number}
-                onChange={(e) => setFormData(p => ({ ...p, license_number: e.target.value }))}
+                id="license"
+                value={formData.license}
+                onChange={(e) => setFormData(p => ({ ...p, license: e.target.value }))}
                 placeholder="Driver license"
               />
             </div>
@@ -152,21 +159,45 @@ export function CustomerDialog({ customer, open, onOpenChange, onSave }: Custome
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Customer Type</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(v) => setFormData(p => ({ ...p, type: v }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="buyer">Buyer</SelectItem>
-                <SelectItem value="seller">Seller</SelectItem>
-                <SelectItem value="both">Both</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="interests">Interests</Label>
+              <Input
+                id="interests"
+                value={formData.interests}
+                onChange={(e) => setFormData(p => ({ ...p, interests: e.target.value }))}
+                placeholder="e.g. SUVs under $30k, low km"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lead_source">Lead Source</Label>
+              <Select
+                value={formData.lead_source}
+                onValueChange={(v) => setFormData(p => ({ ...p, lead_source: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {leadSources.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 py-2">
+            <input
+              id="hot"
+              type="checkbox"
+              checked={formData.hot}
+              onChange={(e) => setFormData(p => ({ ...p, hot: e.target.checked }))}
+              className="w-4 h-4 rounded border-border"
+            />
+            <Label htmlFor="hot" className="cursor-pointer text-sm font-normal">
+              Hot lead — ready to buy soon
+            </Label>
           </div>
 
           <div className="space-y-2">

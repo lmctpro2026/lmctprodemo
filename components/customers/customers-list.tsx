@@ -3,27 +3,28 @@
 import { useState } from "react"
 import useSWR from "swr"
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CustomerDialog } from "./customer-dialog"
 import type { Customer } from "@/lib/types"
-import { Users, Search, Edit, Trash2, Phone, Mail } from "lucide-react"
+import { Users, Search, Edit, Trash2, Phone, Mail, Flame } from "lucide-react"
 
 interface CustomersListProps {
   initialCustomers: Customer[]
   userId: string
 }
 
-async function fetchCustomers(userId: string) {
+async function fetchCustomers(userId: string): Promise<Customer[]> {
   const supabase = createClient()
   const { data } = await supabase
     .from("customers")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-  return data || []
+  return (data as Customer[]) || []
 }
 
 export function CustomersList({ initialCustomers, userId }: CustomersListProps) {
@@ -44,9 +45,14 @@ export function CustomersList({ initialCustomers, userId }: CustomersListProps) 
 
   async function handleDelete(customerId: string) {
     if (!confirm("Are you sure you want to delete this customer?")) return
-    
+
     const supabase = createClient()
-    await supabase.from("customers").delete().eq("id", customerId)
+    const { error } = await supabase.from("customers").delete().eq("id", customerId)
+    if (error) {
+      toast.error(`Delete failed: ${error.message}`)
+      return
+    }
+    toast.success("Customer deleted")
     mutate()
   }
 
@@ -79,12 +85,16 @@ export function CustomersList({ initialCustomers, userId }: CustomersListProps) 
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="font-semibold">{customer.name}</h3>
-                    <Badge variant={
-                      customer.type === "buyer" ? "success" :
-                      customer.type === "seller" ? "info" : "secondary"
-                    }>
-                      {customer.type}
-                    </Badge>
+                    {customer.hot && (
+                      <Badge variant="destructive" className="mt-1 gap-1">
+                        <Flame className="h-3 w-3" /> Hot lead
+                      </Badge>
+                    )}
+                    {customer.interests && (
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                        {customer.interests}
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-1">
                     <Button

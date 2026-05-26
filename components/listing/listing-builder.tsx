@@ -6,11 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { formatCurrency, generateVehicleTitle } from "@/lib/utils"
 import type { Vehicle } from "@/lib/types"
@@ -34,16 +30,14 @@ export function ListingBuilder({ vehicles }: ListingBuilderProps) {
 
   function generateListing() {
     if (!selectedVehicle) return
-
     const v = selectedVehicle
     const title = generateVehicleTitle(v)
-    
     let listing = ""
-    
+
     if (template === "professional") {
       listing = `${title}
 
-${v.asking_price ? formatCurrency(v.asking_price) : "Price on Application"}
+${v.price ? formatCurrency(v.price) : "Price on Application"}
 
 We are pleased to offer this exceptional ${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ""} for sale.
 
@@ -52,14 +46,11 @@ ${v.year ? `- Year: ${v.year}` : ""}
 ${v.make ? `- Make: ${v.make}` : ""}
 ${v.model ? `- Model: ${v.model}` : ""}
 ${v.variant ? `- Variant: ${v.variant}` : ""}
-${v.body_type ? `- Body Type: ${v.body_type}` : ""}
+${v.body ? `- Body Type: ${v.body}` : ""}
 ${v.transmission ? `- Transmission: ${v.transmission}` : ""}
-${v.fuel_type ? `- Fuel Type: ${v.fuel_type}` : ""}
+${v.fuel ? `- Fuel Type: ${v.fuel}` : ""}
 ${v.colour ? `- Colour: ${v.colour}` : ""}
 ${v.odometer ? `- Odometer: ${v.odometer.toLocaleString()} km` : ""}
-${v.engine ? `- Engine: ${v.engine}` : ""}
-${v.doors ? `- Doors: ${v.doors}` : ""}
-${v.seats ? `- Seats: ${v.seats}` : ""}
 ${v.rego ? `- Registration: ${v.rego}` : ""}
 
 ${v.features && v.features.length > 0 ? `FEATURES:\n${v.features.map(f => `- ${f}`).join("\n")}` : ""}
@@ -71,14 +62,14 @@ Contact us today to arrange an inspection or test drive.
 Stock #: ${v.stock_number || "N/A"}
 LMCT Licensed Dealer`
     } else if (template === "casual") {
-      listing = `${title} - ${v.asking_price ? formatCurrency(v.asking_price) : "Call for price"}
+      listing = `${title} - ${v.price ? formatCurrency(v.price) : "Call for price"}
 
 Hey there! Check out this beauty - a ${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ""}.
 
 Quick facts:
 ${v.odometer ? `✓ ${v.odometer.toLocaleString()} km on the clock` : ""}
 ${v.transmission ? `✓ ${v.transmission} transmission` : ""}
-${v.fuel_type ? `✓ Runs on ${v.fuel_type.toLowerCase()}` : ""}
+${v.fuel ? `✓ Runs on ${v.fuel.toLowerCase()}` : ""}
 ${v.colour ? `✓ Stunning ${v.colour.toLowerCase()} colour` : ""}
 
 ${v.notes ? v.notes : "This car is in great condition and ready for its new owner!"}
@@ -88,9 +79,9 @@ Give us a call or drop by for a test drive!
 ${v.stock_number ? `Ref: ${v.stock_number}` : ""}`
     } else {
       listing = `${title}
-${v.asking_price ? formatCurrency(v.asking_price) : "POA"}
+${v.price ? formatCurrency(v.price) : "POA"}
 
-${v.year || ""} | ${v.odometer ? `${v.odometer.toLocaleString()} km` : ""} | ${v.transmission || ""} | ${v.fuel_type || ""}
+${v.year || ""} | ${v.odometer ? `${v.odometer.toLocaleString()} km` : ""} | ${v.transmission || ""} | ${v.fuel || ""}
 Colour: ${v.colour || "N/A"}
 Rego: ${v.rego || "N/A"}
 
@@ -108,7 +99,6 @@ ${v.stock_number ? `Stock #${v.stock_number}` : ""}`
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {/* Configuration */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -125,8 +115,7 @@ ${v.stock_number ? `Stock #${v.stock_number}` : ""}`
             <Select
               value={selectedVehicle?.id || ""}
               onValueChange={(id) => {
-                const vehicle = vehicles.find(v => v.id === id)
-                setSelectedVehicle(vehicle || null)
+                setSelectedVehicle(vehicles.find(v => v.id === id) || null)
                 setGeneratedListing("")
               }}
             >
@@ -171,7 +160,7 @@ ${v.stock_number ? `Stock #${v.stock_number}` : ""}`
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <span className="text-muted-foreground">Price:</span>
-                  <p>{formatCurrency(selectedVehicle.asking_price || 0)}</p>
+                  <p>{formatCurrency(selectedVehicle.price || 0)}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Odometer:</span>
@@ -183,14 +172,14 @@ ${v.stock_number ? `Stock #${v.stock_number}` : ""}`
                 </div>
                 <div>
                   <span className="text-muted-foreground">Fuel:</span>
-                  <p>{selectedVehicle.fuel_type || "N/A"}</p>
+                  <p>{selectedVehicle.fuel || "N/A"}</p>
                 </div>
               </div>
             </div>
           )}
 
-          <Button 
-            onClick={generateListing} 
+          <Button
+            onClick={generateListing}
             disabled={!selectedVehicle}
             className="w-full"
           >
@@ -200,7 +189,6 @@ ${v.stock_number ? `Stock #${v.stock_number}` : ""}`
         </CardContent>
       </Card>
 
-      {/* Generated Listing */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

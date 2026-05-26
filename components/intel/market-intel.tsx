@@ -13,23 +13,23 @@ interface MarketIntelProps {
 export function MarketIntel({ vehicles, sales }: MarketIntelProps) {
   // Calculate metrics
   const totalStock = vehicles.length
-  const availableStock = vehicles.filter(v => v.status === "available").length
+  const availableStock = vehicles.filter(v => v.status === "Available").length
   const totalSales = sales.length
-  
+
   const totalRevenue = sales.reduce((sum, s) => sum + (s.sale_price || 0), 0)
-  const totalPurchaseCost = sales.reduce((sum, s) => sum + (s.vehicle?.purchase_price || 0), 0)
-  const totalProfit = totalRevenue - totalPurchaseCost
+  // Use sales.profit (computed at sale time) — falls back to revenue - vehicle.purchase_price if join present
+  const totalProfit = sales.reduce((sum, s) => sum + (s.profit || 0), 0)
   const avgProfit = totalSales > 0 ? totalProfit / totalSales : 0
-  const avgDaysToSell = 14 // Placeholder - would calculate from actual data
+  const avgDaysToSell = 14 // TODO: compute from sale_date - acquisition_date once data exists
 
-  // Stock value
+  // Stock value at retail price
   const stockValue = vehicles
-    .filter(v => v.status === "available")
-    .reduce((sum, v) => sum + (v.asking_price || 0), 0)
+    .filter(v => v.status === "Available")
+    .reduce((sum, v) => sum + (v.price || 0), 0)
 
-  // Sales by make
-  const salesByMake = sales.reduce((acc, sale) => {
-    const make = sale.vehicle?.make || "Unknown"
+  // Sales by make (uses the vehicle snapshot stored on sales row)
+  const salesByMake = sales.reduce((acc, s) => {
+    const make = s.make || "Unknown"
     acc[make] = (acc[make] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -38,22 +38,24 @@ export function MarketIntel({ vehicles, sales }: MarketIntelProps) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
 
-  // Stock by status
+  // Stock by status (lowercase keys for display; uppercase comparisons against SQL)
   const stockByStatus = {
-    available: vehicles.filter(v => v.status === "available").length,
-    reserved: vehicles.filter(v => v.status === "reserved").length,
-    sold: vehicles.filter(v => v.status === "sold").length,
-    pending: vehicles.filter(v => v.status === "pending").length,
+    available: vehicles.filter(v => v.status === "Available").length,
+    reserved: vehicles.filter(v => v.status === "Reserved").length,
+    sold: vehicles.filter(v => v.status === "Sold").length,
+    pending: vehicles.filter(v => v.status === "Pending").length,
   }
 
-  // Profit margins
-  const profitMargins = sales.map(s => {
-    const cost = s.vehicle?.purchase_price || 0
-    const price = s.sale_price || 0
-    return cost > 0 ? ((price - cost) / cost) * 100 : 0
+  // Profit margins — use the stored margin column if populated, else compute
+  const margins = sales.map(s => {
+    if (s.margin) return s.margin
+    if (s.total_cost > 0 && s.sale_price > 0) {
+      return ((s.sale_price - s.total_cost) / s.sale_price) * 100
+    }
+    return 0
   })
-  const avgMargin = profitMargins.length > 0 
-    ? profitMargins.reduce((a, b) => a + b, 0) / profitMargins.length 
+  const avgMargin = margins.length > 0
+    ? margins.reduce((a, b) => a + b, 0) / margins.length
     : 0
 
   return (

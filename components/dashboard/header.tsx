@@ -32,8 +32,8 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
     router.refresh()
   }
 
-  const initials = profile?.dealership_name
-    ? profile.dealership_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+  const initials = profile?.dealer_name
+    ? profile.dealer_name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
     : user.email?.slice(0, 2).toUpperCase() || "U"
 
   return (
@@ -42,10 +42,10 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
         <MobileNav />
         <div className="hidden md:block">
           <h1 className="font-semibold">
-            {profile?.dealership_name || "My Dealership"}
+            {profile?.dealer_name || "My Dealership"}
           </h1>
-          {profile?.lmct_number && (
-            <p className="text-xs text-muted-foreground">{profile.lmct_number}</p>
+          {profile?.lmct && (
+            <p className="text-xs text-muted-foreground">{profile.lmct}</p>
           )}
         </div>
       </div>
@@ -63,7 +63,7 @@ export function DashboardHeader({ user, profile }: DashboardHeaderProps) {
         <DropdownMenuContent className="w-56" align="end">
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium">{profile?.dealership_name || "My Account"}</p>
+              <p className="text-sm font-medium">{profile?.dealer_name || "My Account"}</p>
               <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
           </DropdownMenuLabel>

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import useSWR from "swr"
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -67,31 +68,46 @@ export function TasksBoard({ initialTasks, userId }: TasksBoardProps) {
     setLoading(true)
 
     const supabase = createClient()
-    await supabase.from("tasks").insert({
+    const { error } = await supabase.from("tasks").insert({
       user_id: userId,
       title: formData.title,
-      description: formData.description || null,
+      description: formData.description || "",
       due_date: formData.due_date || null,
       priority: formData.priority as Task["priority"],
       status: "todo",
     })
 
-    setFormData({ title: "", description: "", due_date: "", priority: "medium" })
     setLoading(false)
+    if (error) {
+      toast.error(`Failed to add task: ${error.message}`)
+      return
+    }
+
+    toast.success("Task added")
+    setFormData({ title: "", description: "", due_date: "", priority: "medium" })
     setAddOpen(false)
     mutate()
   }
 
   async function updateTaskStatus(taskId: string, status: Task["status"]) {
     const supabase = createClient()
-    await supabase.from("tasks").update({ status }).eq("id", taskId)
+    const { error } = await supabase.from("tasks").update({ status }).eq("id", taskId)
+    if (error) {
+      toast.error(`Failed to update task: ${error.message}`)
+      return
+    }
     mutate()
   }
 
   async function deleteTask(taskId: string) {
     if (!confirm("Delete this task?")) return
     const supabase = createClient()
-    await supabase.from("tasks").delete().eq("id", taskId)
+    const { error } = await supabase.from("tasks").delete().eq("id", taskId)
+    if (error) {
+      toast.error(`Delete failed: ${error.message}`)
+      return
+    }
+    toast.success("Task deleted")
     mutate()
   }
 

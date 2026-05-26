@@ -44,14 +44,17 @@ export default function AssistantPage() {
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to get response")
-
       const data = await response.json()
-      setMessages(prev => [...prev, { role: "assistant", content: data.content }])
-    } catch (error) {
+      if (!response.ok) {
+        const detail = typeof data?.error === "string" ? data.error : "Failed to get response"
+        setMessages(prev => [...prev, { role: "assistant", content: detail }])
+      } else {
+        setMessages(prev => [...prev, { role: "assistant", content: data.content }])
+      }
+    } catch {
       setMessages(prev => [
         ...prev,
-        { role: "assistant", content: "Sorry, I encountered an error. Please try again." }
+        { role: "assistant", content: "Network error reaching the AI service. Try again." }
       ])
     } finally {
       setLoading(false)

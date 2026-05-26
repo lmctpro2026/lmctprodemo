@@ -20,8 +20,8 @@ export default async function DashboardPage() {
   const [vehiclesRes, salesRes, customersRes, profileRes] = await Promise.all([
     supabase.from("vehicles").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
     supabase.from("sales").select("*").eq("user_id", user.id).order("sale_date", { ascending: false }),
-    supabase.from("customers").select("id, status").eq("user_id", user.id),
-    supabase.from("profiles").select("dealership_name, ai_name").eq("id", user.id).single(),
+    supabase.from("customers").select("id, hot").eq("user_id", user.id),
+    supabase.from("profiles").select("dealer_name, ai_name").eq("id", user.id).single(),
   ])
 
   const vehicles  = vehiclesRes.data  || []
@@ -29,21 +29,21 @@ export default async function DashboardPage() {
   const customers = customersRes.data || []
   const profile   = profileRes.data
 
-  const available  = vehicles.filter((v: any) => v.status === "available")
+  const available  = vehicles.filter((v: any) => v.status === "Available")
   const mtdSales   = sales.filter((s: any) => s.sale_date >= mtdStart)
-  const hotLeads   = customers.filter((c: any) => c.status === "hot_lead" || c.status === "negotiating")
+  const hotLeads   = customers.filter((c: any) => c.hot === true)
   const mtdRevenue = mtdSales.reduce((s: number, x: any) => s + (x.sale_price || 0), 0)
-  const mtdProfit  = mtdSales.reduce((s: number, x: any) => s + (x.gross_profit || 0), 0)
-  const avgMargin  = mtdSales.length ? mtdSales.reduce((s: number, x: any) => s + (x.margin_percent || 0), 0) / mtdSales.length : 0
+  const mtdProfit  = mtdSales.reduce((s: number, x: any) => s + (x.profit || 0), 0)
+  const avgMargin  = mtdSales.length ? mtdSales.reduce((s: number, x: any) => s + (x.margin || 0), 0) / mtdSales.length : 0
 
-  const aged60 = available.filter((v: any) => daysAgo(v.date_acquired || v.created_at) >= 60)
-  const aged30 = available.filter((v: any) => { const d = daysAgo(v.date_acquired || v.created_at); return d >= 30 && d < 60 })
-  const fresh  = available.filter((v: any) => daysAgo(v.date_acquired || v.created_at) < 30)
+  const aged60 = available.filter((v: any) => daysAgo(v.acquisition_date || v.created_at) >= 60)
+  const aged30 = available.filter((v: any) => { const d = daysAgo(v.acquisition_date || v.created_at); return d >= 30 && d < 60 })
+  const fresh  = available.filter((v: any) => daysAgo(v.acquisition_date || v.created_at) < 30)
 
   // Body type breakdown
   const bodyMap: Record<string, number> = {}
   for (const v of available as any[]) {
-    const b = v.body_type || "Other"
+    const b = v.body || "Other"
     bodyMap[b] = (bodyMap[b] || 0) + 1
   }
   const bodyData = Object.entries(bodyMap).sort((a, b) => b[1] - a[1])
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
                 {(aged60 as any[]).length} vehicle{(aged60 as any[]).length > 1 ? "s" : ""} aged 60+ days —
               </span>
               <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>
-                {fmt((aged60 as any[]).reduce((s: number, v: any) => s + (v.asking_price || 0), 0))} tied up
+                {fmt((aged60 as any[]).reduce((s: number, v: any) => s + (v.price || 0), 0))} tied up
               </span>
             </div>
             <Link href="/dashboard/stock">
@@ -134,11 +134,10 @@ export default async function DashboardPage() {
         {/* Charts row */}
         <div className="g3" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1.4fr", gap:14 }}>
 
-          {/* Inventory health */}
+          {/* Inventory health donut */}
           <div className="scard">
             <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF", marginBottom:4 }}>Inventory Health</div>
             <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginBottom:20 }}>{available.length} vehicles · live</div>
-            {/* Simple visual donut replacement */}
             <div style={{ display:"flex", justifyContent:"center", marginBottom:20 }}>
               <div style={{ position:"relative", width:100, height:100 }}>
                 <svg viewBox="0 0 100 100" style={{ transform:"rotate(-90deg)" }}>
@@ -246,7 +245,7 @@ export default async function DashboardPage() {
             </div>
             {(() => {
               const agedVehicles = (available as any[])
-                .map(v => ({ ...v, days: daysAgo(v.date_acquired || v.created_at) }))
+                .map(v => ({ ...v, days: daysAgo(v.acquisition_date || v.created_at) }))
                 .filter(v => v.days >= 30)
                 .sort((a, b) => b.days - a.days)
                 .slice(0, 6)
@@ -267,7 +266,7 @@ export default async function DashboardPage() {
                           <span style={{ fontSize:12, fontWeight:800, color:c }}>{v.days}d</span>
                         </div>
                         <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF" }}>{v.year} {v.make} {v.model}</div>
-                        <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>{fmt(v.asking_price || 0)}</div>
+                        <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>{fmt(v.price || 0)}</div>
                       </div>
                     )
                   })}
@@ -311,7 +310,7 @@ export default async function DashboardPage() {
                 <Link href="/dashboard/stock" style={{ fontSize:12, color:"#E8A020", textDecoration:"none", display:"block", marginTop:6 }}>Add your first vehicle →</Link>
               </div>
             ) : (available as any[]).slice(0, 5).map((v: any) => {
-              const days = daysAgo(v.date_acquired || v.created_at)
+              const days = daysAgo(v.acquisition_date || v.created_at)
               const ageColor = days >= 60 ? "#EF4444" : days >= 30 ? "#F59E0B" : "#10B981"
               return (
                 <div key={v.id} className="rrow">
@@ -320,7 +319,7 @@ export default async function DashboardPage() {
                     <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>{v.rego || "No rego"}</div>
                   </div>
                   <div style={{ textAlign:"right" }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:"#F1F0FF" }}>{fmt(v.asking_price || 0)}</div>
+                    <div style={{ fontSize:13, fontWeight:700, color:"#F1F0FF" }}>{fmt(v.price || 0)}</div>
                     <div style={{ fontSize:11, color:ageColor, marginTop:2, fontWeight:600 }}>{days}d</div>
                   </div>
                 </div>
@@ -343,12 +342,12 @@ export default async function DashboardPage() {
                 <div>
                   <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF" }}>{s.year} {s.make} {s.model}</div>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>
-                    {s.buyer_first ? `${s.buyer_first} ${s.buyer_last || ""}`.trim() : "Buyer"} · {s.sale_date}
+                    {s.buyer_name || "Buyer"} · {s.sale_date}
                   </div>
                 </div>
                 <div style={{ textAlign:"right" }}>
                   <div style={{ fontSize:13, fontWeight:700, color:"#F1F0FF" }}>{fmt(s.sale_price || 0)}</div>
-                  <div style={{ fontSize:11, color:"#10B981", marginTop:2, fontWeight:600 }}>+{fmt(s.gross_profit || 0)}</div>
+                  <div style={{ fontSize:11, color:"#10B981", marginTop:2, fontWeight:600 }}>+{fmt(s.profit || 0)}</div>
                 </div>
               </div>
             ))}

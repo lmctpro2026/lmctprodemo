@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -14,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { generateVehicleTitle, formatCurrency, formatDate } from "@/lib/utils"
 import type { Vehicle, Customer, Profile } from "@/lib/types"
-import { FileText, Download, Printer, Car, Users } from "lucide-react"
+import { Printer, Car, Users } from "lucide-react"
 
 interface FormsBuilderProps {
   vehicles: Vehicle[]
@@ -111,8 +110,8 @@ export function FormsBuilder({ vehicles, customers, profile }: FormsBuilderProps
                 <div>
                   <h3 className="font-semibold mb-2 border-b pb-1">SELLER DETAILS (DEALER)</h3>
                   <div className="space-y-1 text-sm">
-                    <p><span className="text-gray-600">Name:</span> {profile?.dealership_name || "_______________"}</p>
-                    <p><span className="text-gray-600">LMCT:</span> {profile?.lmct_number || "_______________"}</p>
+                    <p><span className="text-gray-600">Name:</span> {profile?.dealer_name || "_______________"}</p>
+                    <p><span className="text-gray-600">LMCT:</span> {profile?.lmct || "_______________"}</p>
                     <p><span className="text-gray-600">ABN:</span> {profile?.abn || "_______________"}</p>
                     <p><span className="text-gray-600">Address:</span> {profile?.address || "_______________"}</p>
                   </div>
@@ -122,7 +121,7 @@ export function FormsBuilder({ vehicles, customers, profile }: FormsBuilderProps
                   <div className="space-y-1 text-sm">
                     <p><span className="text-gray-600">Name:</span> {selectedCustomer?.name || "_______________"}</p>
                     <p><span className="text-gray-600">Address:</span> {selectedCustomer?.address || "_______________"}</p>
-                    <p><span className="text-gray-600">License No:</span> {selectedCustomer?.license_number || "_______________"}</p>
+                    <p><span className="text-gray-600">License No:</span> {selectedCustomer?.license || "_______________"}</p>
                     <p><span className="text-gray-600">DOB:</span> {selectedCustomer?.date_of_birth ? formatDate(selectedCustomer.date_of_birth) : "_______________"}</p>
                   </div>
                 </div>
@@ -136,7 +135,7 @@ export function FormsBuilder({ vehicles, customers, profile }: FormsBuilderProps
                   <p><span className="text-gray-600">Year:</span> {selectedVehicle?.year || "_______________"}</p>
                   <p><span className="text-gray-600">Make:</span> {selectedVehicle?.make || "_______________"}</p>
                   <p><span className="text-gray-600">Model:</span> {selectedVehicle?.model || "_______________"}</p>
-                  <p><span className="text-gray-600">Body:</span> {selectedVehicle?.body_type || "_______________"}</p>
+                  <p><span className="text-gray-600">Body:</span> {selectedVehicle?.body || "_______________"}</p>
                   <p><span className="text-gray-600">Colour:</span> {selectedVehicle?.colour || "_______________"}</p>
                   <p><span className="text-gray-600">Odometer:</span> {selectedVehicle?.odometer ? `${selectedVehicle.odometer.toLocaleString()} km` : "_______________"}</p>
                   <p><span className="text-gray-600">Date:</span> {today}</p>
@@ -185,7 +184,7 @@ export function FormsBuilder({ vehicles, customers, profile }: FormsBuilderProps
 
               <div className="space-y-4 text-sm">
                 <p>
-                  This contract is made between <strong>{profile?.dealership_name || "[DEALER NAME]"}</strong> (Seller)
+                  This contract is made between <strong>{profile?.dealer_name || "[DEALER NAME]"}</strong> (Seller)
                   and <strong>{selectedCustomer?.name || "[BUYER NAME]"}</strong> (Buyer).
                 </p>
 
@@ -199,7 +198,7 @@ export function FormsBuilder({ vehicles, customers, profile }: FormsBuilderProps
 
                 <div className="border p-4 rounded">
                   <h4 className="font-semibold mb-2">Sale Price:</h4>
-                  <p className="text-lg">{formatCurrency(selectedVehicle?.asking_price || 0)}</p>
+                  <p className="text-lg">{formatCurrency(selectedVehicle?.price || 0)}</p>
                   <p className="text-xs text-gray-500">(Inclusive of GST where applicable)</p>
                 </div>
 
@@ -218,7 +217,7 @@ export function FormsBuilder({ vehicles, customers, profile }: FormsBuilderProps
                   <div>
                     <p className="text-sm text-gray-600 mb-8">Seller Signature:</p>
                     <div className="border-b border-gray-400 mb-1"></div>
-                    <p className="text-xs">{profile?.dealership_name}</p>
+                    <p className="text-xs">{profile?.dealer_name}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-8">Buyer Signature:</p>
@@ -252,8 +251,8 @@ export function FormsBuilder({ vehicles, customers, profile }: FormsBuilderProps
             <div className="border rounded-lg p-6 bg-white text-black print:shadow-none">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold">{profile?.dealership_name || "DEALER NAME"}</h2>
-                  <p className="text-sm text-gray-600">{profile?.lmct_number}</p>
+                  <h2 className="text-2xl font-bold">{profile?.dealer_name || "DEALER NAME"}</h2>
+                  <p className="text-sm text-gray-600">{profile?.lmct}</p>
                   <p className="text-sm text-gray-600">ABN: {profile?.abn || "XX XXX XXX XXX"}</p>
                   <p className="text-sm text-gray-600">{profile?.address}</p>
                 </div>
@@ -286,18 +285,18 @@ export function FormsBuilder({ vehicles, customers, profile }: FormsBuilderProps
                         Rego: {selectedVehicle?.rego || "[REGO]"} | VIN: {selectedVehicle?.vin || "[VIN]"}
                       </span>
                     </td>
-                    <td className="text-right py-2">{formatCurrency(selectedVehicle?.asking_price || 0)}</td>
+                    <td className="text-right py-2">{formatCurrency(selectedVehicle?.price || 0)}</td>
                   </tr>
                 </tbody>
                 <tfoot>
                   <tr className="border-t">
                     <td className="py-2 font-semibold">Total (Inc GST)</td>
-                    <td className="text-right py-2 font-bold text-lg">{formatCurrency(selectedVehicle?.asking_price || 0)}</td>
+                    <td className="text-right py-2 font-bold text-lg">{formatCurrency(selectedVehicle?.price || 0)}</td>
                   </tr>
                   <tr>
                     <td className="text-sm text-gray-600">GST Included</td>
                     <td className="text-right text-sm text-gray-600">
-                      {formatCurrency((selectedVehicle?.asking_price || 0) / 11)}
+                      {formatCurrency((selectedVehicle?.price || 0) / 11)}
                     </td>
                   </tr>
                 </tfoot>

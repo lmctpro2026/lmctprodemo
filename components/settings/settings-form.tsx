@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,50 +20,68 @@ interface SettingsFormProps {
 export function SettingsForm({ profile, userEmail }: SettingsFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
   const [formData, setFormData] = useState({
-    dealership_name: profile?.dealership_name || "",
-    lmct_number: profile?.lmct_number || "",
+    dealer_name: profile?.dealer_name || "",
+    lmct: profile?.lmct || "",
     abn: profile?.abn || "",
     phone: profile?.phone || "",
     address: profile?.address || "",
-    manager_pin: profile?.manager_pin || "",
+    manager_pin: "",  // intentionally empty — never preload the hash
   })
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setMessage(null)
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
       setLoading(false)
+      toast.error("Not signed in")
       return
     }
 
-    const { error } = await supabase
+    // Update dealer-profile fields (everything except the PIN — that goes
+    // through /api/pin so it can be hashed server-side).
+    const { error: profileError } = await supabase
       .from("profiles")
       .update({
-        dealership_name: formData.dealership_name || null,
-        lmct_number: formData.lmct_number || null,
-        abn: formData.abn || null,
-        phone: formData.phone || null,
-        address: formData.address || null,
-        manager_pin: formData.manager_pin || null,
+        dealer_name: formData.dealer_name,
+        lmct: formData.lmct,
+        abn: formData.abn,
+        phone: formData.phone,
+        address: formData.address,
       })
       .eq("id", user.id)
 
-    setLoading(false)
-
-    if (error) {
-      setMessage({ type: "error", text: "Failed to update settings" })
-    } else {
-      setMessage({ type: "success", text: "Settings updated successfully" })
-      router.refresh()
+    if (profileError) {
+      setLoading(false)
+      toast.error(`Profile save failed: ${profileError.message}`)
+      return
     }
+
+    // If user entered a new PIN, hash it server-side
+    if (formData.manager_pin) {
+      const r = await fetch("/api/pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "set", pin: formData.manager_pin }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) {
+        setLoading(false)
+        toast.error(`PIN save failed: ${j.error || "Unknown error"}`)
+        return
+      }
+      // Clear the PIN field after successful save
+      setFormData(p => ({ ...p, manager_pin: "" }))
+    }
+
+    setLoading(false)
+    toast.success("Settings saved")
+    router.refresh()
   }
 
   return (
@@ -88,20 +107,20 @@ export function SettingsForm({ profile, userEmail }: SettingsFormProps) {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="dealership_name">Dealership Name</Label>
+                  <Label htmlFor="dealer_name">Dealership Name</Label>
                   <Input
-                    id="dealership_name"
-                    value={formData.dealership_name}
-                    onChange={(e) => setFormData(p => ({ ...p, dealership_name: e.target.value }))}
+                    id="dealer_name"
+                    value={formData.dealer_name}
+                    onChange={(e) => setFormData(p => ({ ...p, dealer_name: e.target.value }))}
                     placeholder="Your Dealership Pty Ltd"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lmct_number">LMCT Number</Label>
+                  <Label htmlFor="lmct">LMCT Number</Label>
                   <Input
-                    id="lmct_number"
-                    value={formData.lmct_number}
-                    onChange={(e) => setFormData(p => ({ ...p, lmct_number: e.target.value }))}
+                    id="lmct"
+                    value={formData.lmct}
+                    onChange={(e) => setFormData(p => ({ ...p, lmct: e.target.value }))}
                     placeholder="LMCT 12345"
                   />
                 </div>
@@ -138,16 +157,6 @@ export function SettingsForm({ profile, userEmail }: SettingsFormProps) {
                 />
               </div>
 
-              {message && (
-                <div className={`p-3 rounded-lg text-sm ${
-                  message.type === "success" 
-                    ? "bg-primary/10 text-primary" 
-                    : "bg-destructive/10 text-destructive"
-                }`}>
-                  {message.text}
-                </div>
-              )}
-
               <Button type="submit" disabled={loading}>
                 {loading ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -181,11 +190,12 @@ export function SettingsForm({ profile, userEmail }: SettingsFormProps) {
                   type="password"
                   value={formData.manager_pin}
                   onChange={(e) => setFormData(p => ({ ...p, manager_pin: e.target.value }))}
-                  placeholder="4-6 digit PIN"
-                  maxLength={6}
+                  placeholder="Enter 4–12 character PIN to set or change"
+                  maxLength={12}
+                  autoComplete="new-password"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Used to protect sensitive operations like editing prices
+                  Used to protect sensitive operations like editing prices. Hashed via SHA-256 + per-user salt before storage. Leave blank to keep your current PIN.
                 </p>
               </div>
 
