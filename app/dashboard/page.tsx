@@ -1,17 +1,38 @@
-import { createClient } from "@/lib/supabase/server"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/server"
+import { cn } from "@/lib/utils"
+import {
+  AlertTriangle,
+  ArrowRight,
+  ArrowUpRight,
+  Car,
+  DollarSign,
+  FileText,
+  LineChart,
+  Plus,
+  Sparkles,
+} from "lucide-react"
 
-function fmt(n: number) {
-  return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 }).format(n)
+type AnyRow = any // dashboard query rows are intentionally untyped — see handoff gotcha #5
+
+function fmt(n: number): string {
+  return new Intl.NumberFormat("en-AU", {
+    style: "currency",
+    currency: "AUD",
+    maximumFractionDigits: 0,
+  }).format(n)
 }
 
-function daysAgo(date: string) {
+function daysAgo(date: string | null | undefined): number {
+  if (!date) return 0
   return Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
 }
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return null
 
   const now = new Date()
@@ -24,337 +45,450 @@ export default async function DashboardPage() {
     supabase.from("profiles").select("dealer_name, ai_name").eq("id", user.id).single(),
   ])
 
-  const vehicles  = vehiclesRes.data  || []
-  const sales     = salesRes.data     || []
-  const customers = customersRes.data || []
-  const profile   = profileRes.data
+  const vehicles  = (vehiclesRes.data  || []) as AnyRow[]
+  const sales     = (salesRes.data     || []) as AnyRow[]
+  const customers = (customersRes.data || []) as AnyRow[]
+  const profile   = profileRes.data as { dealer_name?: string; ai_name?: string } | null
 
-  const available  = vehicles.filter((v: any) => v.status === "Available")
-  const mtdSales   = sales.filter((s: any) => s.sale_date >= mtdStart)
-  const hotLeads   = customers.filter((c: any) => c.hot === true)
-  const mtdRevenue = mtdSales.reduce((s: number, x: any) => s + (x.sale_price || 0), 0)
-  const mtdProfit  = mtdSales.reduce((s: number, x: any) => s + (x.profit || 0), 0)
-  const avgMargin  = mtdSales.length ? mtdSales.reduce((s: number, x: any) => s + (x.margin || 0), 0) / mtdSales.length : 0
+  const available  = vehicles.filter((v) => v.status === "Available")
+  const mtdSales   = sales.filter((s) => String(s.sale_date) >= mtdStart)
+  const hotLeads   = customers.filter((c) => c.hot === true)
+  const mtdRevenue = mtdSales.reduce((s, x) => s + (Number(x.sale_price) || 0), 0)
+  const mtdProfit  = mtdSales.reduce((s, x) => s + (Number(x.profit) || 0), 0)
+  const avgMargin  = mtdSales.length
+    ? mtdSales.reduce((s, x) => s + (Number(x.margin) || 0), 0) / mtdSales.length
+    : 0
 
-  const aged60 = available.filter((v: any) => daysAgo(v.acquisition_date || v.created_at) >= 60)
-  const aged30 = available.filter((v: any) => { const d = daysAgo(v.acquisition_date || v.created_at); return d >= 30 && d < 60 })
-  const fresh  = available.filter((v: any) => daysAgo(v.acquisition_date || v.created_at) < 30)
+  const aged60 = available.filter((v) => daysAgo(String(v.acquisition_date) || String(v.created_at)) >= 60)
+  const aged30 = available.filter((v) => {
+    const d = daysAgo(String(v.acquisition_date) || String(v.created_at))
+    return d >= 30 && d < 60
+  })
+  const fresh  = available.filter((v) => daysAgo(String(v.acquisition_date) || String(v.created_at)) < 30)
 
-  // Body type breakdown
-  const bodyMap: Record<string, number> = {}
-  for (const v of available as any[]) {
-    const b = v.body || "Other"
-    bodyMap[b] = (bodyMap[b] || 0) + 1
-  }
-  const bodyData = Object.entries(bodyMap).sort((a, b) => b[1] - a[1])
-
-  // 6 month sales trend
-  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+  // 6-month sales trend
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   const trendData = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1)
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
-    const count = (sales as any[]).filter(s => s.sale_date?.startsWith(key)).length
+    const count = sales.filter((s) => String(s.sale_date || "").startsWith(key)).length
     return { month: monthNames[d.getMonth()], count }
   })
-  const maxCount = Math.max(...trendData.map(t => t.count), 1)
+  const trendMax = Math.max(...trendData.map((t) => t.count), 1)
+
+  // Body type breakdown
+  const bodyMap: Record<string, number> = {}
+  for (const v of available) {
+    const b = (v.body as string) || "Other"
+    bodyMap[b] = (bodyMap[b] || 0) + 1
+  }
+  const bodyData = Object.entries(bodyMap).sort((a, b) => b[1] - a[1]).slice(0, 5)
 
   const today = now.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })
-  const aiName = (profile as any)?.ai_name || "MAX"
+  const dealerName = profile?.dealer_name || "your dealership"
+  const aiName = profile?.ai_name || "MAX"
 
-  const bodyColors = ["#7C3AED","#E8A020","#10B981","#3B82F6","#EF4444","#F59E0B"]
+  const agedValue = aged60.reduce((s, v) => s + (Number(v.price) || 0), 0)
+
+  const recentStock = available.slice(0, 5)
+  const recentSales = sales.slice(0, 5)
 
   return (
-    <div style={{ background: "#080D1A", minHeight: "100vh", color: "#F1F0FF" }}>
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
-        .scard { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:20px 24px; }
-        .rrow { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
-        .rrow:last-child { border-bottom:none; }
-        .qbtn { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:10px; text-decoration:none; }
-        @media(max-width:900px){.g4{grid-template-columns:1fr 1fr !important}.g3{grid-template-columns:1fr !important}.g2{grid-template-columns:1fr !important}}
-      `}</style>
-
-      {/* Top bar */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"20px 28px", borderBottom:"1px solid rgba(255,255,255,0.05)", background:"rgba(255,255,255,0.02)" }}>
+    <div className="space-y-6 -m-6 p-6">
+      {/* Page header */}
+      <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <h1 style={{ fontSize:22, fontWeight:700, color:"#F1F0FF" }}>Dashboard</h1>
-          <p style={{ fontSize:13, color:"rgba(255,255,255,0.35)", marginTop:2 }}>{today}</p>
+          <h1 className="text-xl font-semibold">{dealerName}</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{today}</p>
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6, background:"rgba(16,185,129,0.1)", border:"1px solid rgba(16,185,129,0.2)", borderRadius:30, padding:"6px 14px" }}>
-            <div style={{ width:7, height:7, borderRadius:"50%", background:"#10B981", animation:"pulse 2s infinite" }}></div>
-            <span style={{ fontSize:11, fontWeight:700, color:"#10B981", letterSpacing:"0.5px" }}>AI ACTIVE</span>
-          </div>
-          <Link href="/dashboard/stock">
-            <button style={{ background:"#E8A020", color:"#0D1F3C", border:"none", borderRadius:8, padding:"9px 18px", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-              + Add Vehicle
-            </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/assistant"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-md px-2.5 py-1.5 transition-colors"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Ask {aiName}
+          </Link>
+          <Link
+            href="/dashboard/stock"
+            className="inline-flex items-center gap-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-md px-3 py-1.5 hover:opacity-90 transition-opacity"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add Vehicle
           </Link>
         </div>
       </div>
 
-      <div style={{ padding:"24px 28px", display:"flex", flexDirection:"column", gap:20 }}>
-
-        {/* Aged alert */}
-        {(aged60 as any[]).length > 0 && (
-          <div style={{ background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:12, padding:"14px 20px", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <span style={{ fontSize:16, color:"#EF4444" }}>⚠</span>
-              <span style={{ fontSize:13, fontWeight:700, color:"#EF4444" }}>
-                {(aged60 as any[]).length} vehicle{(aged60 as any[]).length > 1 ? "s" : ""} aged 60+ days —
-              </span>
-              <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>
-                {fmt((aged60 as any[]).reduce((s: number, v: any) => s + (v.price || 0), 0))} tied up
-              </span>
+      {/* Aged alert strip — shown only when there's something to act on */}
+      {aged60.length > 0 && (
+        <Link
+          href="/dashboard/stock"
+          className="group flex items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 hover:bg-destructive/10 transition-colors"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+            <div className="text-sm min-w-0">
+              <span className="font-medium text-destructive">{aged60.length} vehicle{aged60.length === 1 ? "" : "s"} aged 60+ days</span>
+              <span className="text-muted-foreground"> · {fmt(agedValue)} tied up</span>
             </div>
-            <Link href="/dashboard/stock">
-              <button style={{ background:"rgba(239,68,68,0.12)", color:"#EF4444", border:"1px solid rgba(239,68,68,0.25)", borderRadius:6, padding:"6px 14px", fontSize:12, fontWeight:700, cursor:"pointer" }}>
-                View aged stock →
-              </button>
-            </Link>
           </div>
-        )}
+          <ArrowRight className="h-4 w-4 text-destructive/70 group-hover:text-destructive transition-colors shrink-0" />
+        </Link>
+      )}
 
-        {/* Stats */}
-        <div className="g4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
-          {[
-            { label:"In Stock",    value:String(available.length),   sub:`${vehicles.length} total`,            color:"#F1F0FF" },
-            { label:"Sold MTD",    value:String(mtdSales.length),    sub:`${sales.length} all time`,            color:"#10B981" },
-            { label:"MTD Revenue", value:fmt(mtdRevenue),            sub:"this month",                         color:"#F1F0FF" },
-            { label:"MTD Profit",  value:fmt(mtdProfit),             sub:`${avgMargin.toFixed(1)}% avg margin`, color:"#10B981" },
-          ].map(s => (
-            <div key={s.label} className="scard">
-              <div style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,0.35)", textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:10 }}>{s.label}</div>
-              <div style={{ fontSize:30, fontWeight:800, color:s.color, lineHeight:1, marginBottom:6 }}>{s.value}</div>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>{s.sub}</div>
-            </div>
-          ))}
-        </div>
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Stat label="In stock"    value={String(available.length)} sub={`${vehicles.length} total`} />
+        <Stat label="Sold MTD"    value={String(mtdSales.length)}  sub={`${sales.length} all-time`} accent />
+        <Stat label="MTD revenue" value={fmt(mtdRevenue)}          sub="this month" />
+        <Stat label="MTD profit"  value={fmt(mtdProfit)}           sub={`${avgMargin.toFixed(1)}% avg margin`} accent />
+      </div>
 
-        {/* Charts row */}
-        <div className="g3" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1.4fr", gap:14 }}>
-
-          {/* Inventory health donut */}
-          <div className="scard">
-            <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF", marginBottom:4 }}>Inventory Health</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginBottom:20 }}>{available.length} vehicles · live</div>
-            <div style={{ display:"flex", justifyContent:"center", marginBottom:20 }}>
-              <div style={{ position:"relative", width:100, height:100 }}>
-                <svg viewBox="0 0 100 100" style={{ transform:"rotate(-90deg)" }}>
-                  {(() => {
-                    const total = available.length || 1
-                    const segments = [
-                      { value: fresh.length, color:"#10B981" },
-                      { value: (aged30 as any[]).length, color:"#F59E0B" },
-                      { value: aged60.length, color:"#EF4444" },
-                    ]
-                    let offset = 0
-                    return segments.map((seg, i) => {
-                      const pct = seg.value / total
-                      const dash = pct * 251.2
-                      const el = (
-                        <circle key={i} cx="50" cy="50" r="40"
-                          fill="none" stroke={seg.color} strokeWidth="12"
-                          strokeDasharray={`${dash} ${251.2 - dash}`}
-                          strokeDashoffset={-offset}
-                          opacity={seg.value === 0 ? 0 : 1}
-                        />
-                      )
-                      offset += dash
-                      return el
-                    })
-                  })()}
-                </svg>
-                <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", textAlign:"center" }}>
-                  <div style={{ fontSize:22, fontWeight:800, color:"#F1F0FF", lineHeight:1 }}>{available.length}</div>
-                  <div style={{ fontSize:9, color:"rgba(255,255,255,0.3)", marginTop:2 }}>total</div>
-                </div>
-              </div>
-            </div>
-            {[
-              { label:"Fresh (0–30d)",  count:fresh.length,            color:"#10B981" },
-              { label:"Watch (31–60d)", count:(aged30 as any[]).length, color:"#F59E0B" },
-              { label:"Aged (60d+)",    count:(aged60 as any[]).length, color:"#EF4444" },
-            ].map(item => (
-              <div key={item.label} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:12, marginBottom:8 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-                  <div style={{ width:8, height:8, borderRadius:"50%", background:item.color }}></div>
-                  <span style={{ color:"rgba(255,255,255,0.45)" }}>{item.label}</span>
-                </div>
-                <span style={{ color:item.color, fontWeight:700 }}>{item.count}</span>
-              </div>
-            ))}
+      {/* Health row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Inventory by age */}
+        <Panel title="Inventory by age" sub={`${available.length} available`}>
+          <div className="space-y-3">
+            <AgeBar label="Fresh"   sublabel="0–30d"  count={fresh.length}   total={available.length} tone="ok" />
+            <AgeBar label="Watch"   sublabel="31–60d" count={aged30.length}  total={available.length} tone="warn" />
+            <AgeBar label="Aged"    sublabel="60d+"   count={aged60.length}  total={available.length} tone="danger" />
           </div>
+        </Panel>
 
-          {/* Body type */}
-          <div className="scard">
-            <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF", marginBottom:4 }}>By Body Type</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginBottom:16 }}>Current stock mix</div>
-            {bodyData.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"40px 0", color:"rgba(255,255,255,0.2)", fontSize:12 }}>No stock yet</div>
-            ) : bodyData.slice(0, 6).map(([name, count], i) => {
-              const pct = available.length ? Math.round(count / available.length * 100) : 0
+        {/* Body mix */}
+        <Panel title="By body type" sub="Current stock mix">
+          {bodyData.length === 0 ? (
+            <Empty>No stock yet.</Empty>
+          ) : (
+            <div className="space-y-2.5">
+              {bodyData.map(([name, count]) => {
+                const pct = available.length ? Math.round((count / available.length) * 100) : 0
+                return (
+                  <div key={name}>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-foreground/80">{name}</span>
+                      <span className="text-muted-foreground tabular-nums">{count} · {pct}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full bg-primary/60 rounded-full" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </Panel>
+
+        {/* Trend */}
+        <Panel title="Sales trend" sub="Last 6 months">
+          <div className="flex items-end justify-between gap-2 h-28 pt-3">
+            {trendData.map((t, i) => {
+              const isCurrent = i === trendData.length - 1
+              const h = t.count === 0 ? 4 : Math.max((t.count / trendMax) * 92, 8)
               return (
-                <div key={name} style={{ marginBottom:12 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:5 }}>
-                    <span style={{ color:"rgba(255,255,255,0.55)" }}>{name}</span>
-                    <span style={{ color:"rgba(255,255,255,0.35)" }}>{count}</span>
-                  </div>
-                  <div style={{ height:6, background:"rgba(255,255,255,0.06)", borderRadius:3, overflow:"hidden" }}>
-                    <div style={{ width:`${pct}%`, height:"100%", background:bodyColors[i % bodyColors.length], borderRadius:3 }}></div>
-                  </div>
+                <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+                  <span className="text-[10px] tabular-nums text-muted-foreground">
+                    {t.count > 0 ? t.count : ""}
+                  </span>
+                  <div
+                    className={cn(
+                      "w-full rounded-sm",
+                      isCurrent ? "bg-primary" : "bg-primary/30"
+                    )}
+                    style={{ height: `${h}px` }}
+                  />
+                  <span className="text-[10px] text-muted-foreground/80">{t.month}</span>
                 </div>
               )
             })}
           </div>
+        </Panel>
+      </div>
 
-          {/* Sales trend */}
-          <div className="scard">
-            <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF", marginBottom:4 }}>Sales Trend</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginBottom:16 }}>Last 6 months</div>
-            <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:120, padding:"0 4px" }}>
-              {trendData.map((t, i) => (
-                <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
-                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", fontWeight:600 }}>{t.count > 0 ? t.count : ""}</div>
-                  <div style={{
-                    width:"100%", borderRadius:"4px 4px 0 0",
-                    background: i === trendData.length - 1 ? "#7C3AED" : "rgba(124,58,237,0.35)",
-                    height: `${Math.max((t.count / maxCount) * 80, t.count > 0 ? 8 : 4)}px`,
-                    minHeight:4, transition:"height 0.5s ease",
-                  }}></div>
-                  <div style={{ fontSize:10, color:"rgba(255,255,255,0.3)" }}>{t.month}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Aged detail + Quick actions */}
-        <div className="g2" style={{ display:"grid", gridTemplateColumns:"1.5fr 1fr", gap:14 }}>
-          <div className="scard">
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-              <div>
-                <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF" }}>Stock Ageing Alert</div>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>Vehicles tying up your cash</div>
-              </div>
-              <Link href="/dashboard/stock">
-                <button style={{ background:"rgba(232,160,32,0.1)", color:"#E8A020", border:"1px solid rgba(232,160,32,0.2)", borderRadius:6, padding:"6px 12px", fontSize:11, fontWeight:700, cursor:"pointer" }}>
-                  Run Strategy →
-                </button>
+      {/* Aged detail + Quick actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div className="lg:col-span-2">
+          <Panel
+            title="Aged stock"
+            sub="Oldest available cars — act on price or wholesale"
+            action={
+              <Link
+                href="/dashboard/stock"
+                className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+              >
+                View all <ArrowUpRight className="h-3 w-3" />
               </Link>
-            </div>
+            }
+          >
             {(() => {
-              const agedVehicles = (available as any[])
-                .map(v => ({ ...v, days: daysAgo(v.acquisition_date || v.created_at) }))
-                .filter(v => v.days >= 30)
+              const agedRows = available
+                .map((v) => ({ ...v, days: daysAgo(String(v.acquisition_date) || String(v.created_at)) }))
+                .filter((v) => v.days >= 30)
                 .sort((a, b) => b.days - a.days)
                 .slice(0, 6)
-              if (agedVehicles.length === 0) return (
-                <div style={{ textAlign:"center", padding:"28px 0", color:"rgba(255,255,255,0.2)", fontSize:12 }}>No aged stock — great work</div>
-              )
+              if (agedRows.length === 0) {
+                return <Empty>No aged stock. Nice.</Empty>
+              }
               return (
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-                  {agedVehicles.map((v: any) => {
-                    const isAged = v.days >= 60
-                    const c = isAged ? "#EF4444" : "#F59E0B"
+                <ul className="divide-y divide-border/60">
+                  {agedRows.map((v) => {
+                    const danger = v.days >= 60
                     return (
-                      <div key={v.id} style={{ background:`rgba(${isAged?"239,68,68":"245,158,11"},0.06)`, border:`1px solid rgba(${isAged?"239,68,68":"245,158,11"},0.18)`, borderRadius:10, padding:"12px 14px" }}>
-                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-                          <span style={{ fontSize:9, fontWeight:800, padding:"2px 7px", borderRadius:10, background:`rgba(${isAged?"239,68,68":"245,158,11"},0.15)`, color:c }}>
-                            {isAged ? "60+ DAYS" : "30-60 DAYS"}
-                          </span>
-                          <span style={{ fontSize:12, fontWeight:800, color:c }}>{v.days}d</span>
+                      <li key={String(v.id)} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium truncate">
+                            {v.year} {v.make} {v.model}
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {(v.rego as string) || "No rego"}{v.stock_number ? ` · #${v.stock_number}` : ""}
+                          </div>
                         </div>
-                        <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF" }}>{v.year} {v.make} {v.model}</div>
-                        <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>{fmt(v.price || 0)}</div>
-                      </div>
+                        <div className="flex items-center gap-4 shrink-0">
+                          <span className="text-sm font-medium tabular-nums text-foreground/90">
+                            {fmt(Number(v.price) || 0)}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-xs font-semibold tabular-nums w-12 text-right",
+                              danger ? "text-destructive" : "text-amber-400"
+                            )}
+                          >
+                            {v.days}d
+                          </span>
+                        </div>
+                      </li>
                     )
                   })}
-                </div>
+                </ul>
               )
             })()}
-          </div>
+          </Panel>
+        </div>
 
-          <div className="scard">
-            <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF", marginBottom:16 }}>Quick Actions</div>
-            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-              {[
-                { label:"Add Vehicle",        href:"/dashboard/stock",     icon:"🚗", c:"#7C3AED" },
-                { label:"Record a Sale",      href:"/dashboard/sales",     icon:"💰", c:"#10B981" },
-                { label:`Ask ${aiName}`,      href:"/dashboard/assistant", icon:"⚡", c:"#E8A020" },
-                { label:"Compliance Forms",   href:"/dashboard/forms",     icon:"📋", c:"#3B82F6" },
-                { label:"Market Intelligence",href:"/dashboard/intel",     icon:"📈", c:"#F59E0B" },
-              ].map(a => (
-                <Link key={a.label} href={a.href} className="qbtn">
-                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                    <div style={{ width:32, height:32, borderRadius:8, background:`${a.c}18`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15 }}>{a.icon}</div>
-                    <span style={{ fontSize:13, fontWeight:500, color:"rgba(255,255,255,0.65)" }}>{a.label}</span>
+        <Panel title="Today" sub={`${hotLeads.length} hot lead${hotLeads.length === 1 ? "" : "s"}`}>
+          <nav className="grid gap-1">
+            <ActionLink href="/dashboard/stock"     label="Add vehicle"      Icon={Plus} />
+            <ActionLink href="/dashboard/sales"     label="Record a sale"    Icon={DollarSign} />
+            <ActionLink href="/dashboard/assistant" label={`Ask ${aiName}`}  Icon={Sparkles} />
+            <ActionLink href="/dashboard/forms"     label="Compliance forms" Icon={FileText} />
+            <ActionLink href="/dashboard/intel"     label="Market intel"     Icon={LineChart} />
+          </nav>
+        </Panel>
+      </div>
+
+      {/* Recent activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <Panel
+          title="Recent stock"
+          action={
+            <Link href="/dashboard/stock" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+              All <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          }
+        >
+          {recentStock.length === 0 ? (
+            <Empty>
+              No vehicles yet.{" "}
+              <Link href="/dashboard/stock" className="text-primary hover:underline">
+                Add your first
+              </Link>
+              .
+            </Empty>
+          ) : (
+            <ul className="divide-y divide-border/60">
+              {recentStock.map((v) => {
+                const days = daysAgo(String(v.acquisition_date) || String(v.created_at))
+                return (
+                  <li key={String(v.id)} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">
+                        {v.year} {v.make} {v.model}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {(v.rego as string) || "No rego"}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 shrink-0">
+                      <span className="text-sm font-medium tabular-nums">{fmt(Number(v.price) || 0)}</span>
+                      <span
+                        className={cn(
+                          "text-xs tabular-nums w-10 text-right",
+                          days >= 60 ? "text-destructive" : days >= 30 ? "text-amber-400" : "text-emerald-400/90"
+                        )}
+                      >
+                        {days}d
+                      </span>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </Panel>
+
+        <Panel
+          title="Recent sales"
+          action={
+            <Link href="/dashboard/sales" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+              All <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          }
+        >
+          {recentSales.length === 0 ? (
+            <Empty>
+              No sales yet.{" "}
+              <Link href="/dashboard/sales" className="text-primary hover:underline">
+                Record your first
+              </Link>
+              .
+            </Empty>
+          ) : (
+            <ul className="divide-y divide-border/60">
+              {recentSales.map((s) => (
+                <li key={String(s.id)} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">
+                      {s.year} {s.make} {s.model}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {(s.buyer_name as string) || "Buyer"} · {s.sale_date as string}
+                    </div>
                   </div>
-                  <span style={{ color:"rgba(255,255,255,0.2)" }}>→</span>
-                </Link>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <span className="text-sm font-medium tabular-nums">{fmt(Number(s.sale_price) || 0)}</span>
+                    <span className="text-xs tabular-nums text-emerald-400/90 w-16 text-right">
+                      +{fmt(Number(s.profit) || 0)}
+                    </span>
+                  </div>
+                </li>
               ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Recent stock + sales */}
-        <div className="g2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-          <div className="scard">
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-              <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF" }}>Recent Stock</div>
-              <Link href="/dashboard/stock" style={{ fontSize:12, color:"#E8A020", textDecoration:"none" }}>All →</Link>
-            </div>
-            {available.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"32px 0" }}>
-                <div style={{ fontSize:12, color:"rgba(255,255,255,0.25)" }}>No vehicles yet</div>
-                <Link href="/dashboard/stock" style={{ fontSize:12, color:"#E8A020", textDecoration:"none", display:"block", marginTop:6 }}>Add your first vehicle →</Link>
-              </div>
-            ) : (available as any[]).slice(0, 5).map((v: any) => {
-              const days = daysAgo(v.acquisition_date || v.created_at)
-              const ageColor = days >= 60 ? "#EF4444" : days >= 30 ? "#F59E0B" : "#10B981"
-              return (
-                <div key={v.id} className="rrow">
-                  <div>
-                    <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF" }}>{v.year} {v.make} {v.model}</div>
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>{v.rego || "No rego"}</div>
-                  </div>
-                  <div style={{ textAlign:"right" }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:"#F1F0FF" }}>{fmt(v.price || 0)}</div>
-                    <div style={{ fontSize:11, color:ageColor, marginTop:2, fontWeight:600 }}>{days}d</div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="scard">
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-              <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF" }}>Recent Sales</div>
-              <Link href="/dashboard/sales" style={{ fontSize:12, color:"#E8A020", textDecoration:"none" }}>All →</Link>
-            </div>
-            {sales.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"32px 0" }}>
-                <div style={{ fontSize:12, color:"rgba(255,255,255,0.25)" }}>No sales yet</div>
-                <Link href="/dashboard/sales" style={{ fontSize:12, color:"#E8A020", textDecoration:"none", display:"block", marginTop:6 }}>Record your first sale →</Link>
-              </div>
-            ) : (sales as any[]).slice(0, 5).map((s: any) => (
-              <div key={s.id} className="rrow">
-                <div>
-                  <div style={{ fontSize:13, fontWeight:600, color:"#F1F0FF" }}>{s.year} {s.make} {s.model}</div>
-                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>
-                    {s.buyer_name || "Buyer"} · {s.sale_date}
-                  </div>
-                </div>
-                <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:"#F1F0FF" }}>{fmt(s.sale_price || 0)}</div>
-                  <div style={{ fontSize:11, color:"#10B981", marginTop:2, fontWeight:600 }}>+{fmt(s.profit || 0)}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
+            </ul>
+          )}
+        </Panel>
       </div>
     </div>
   )
 }
+
+function Stat({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string
+  value: string
+  sub?: string
+  accent?: boolean
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-card/40 px-4 py-3">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div
+        className={cn(
+          "mt-1.5 text-2xl font-semibold tabular-nums leading-none",
+          accent && "text-emerald-400"
+        )}
+      >
+        {value}
+      </div>
+      {sub && <div className="mt-1 text-[11px] text-muted-foreground">{sub}</div>}
+    </div>
+  )
+}
+
+function Panel({
+  title,
+  sub,
+  action,
+  children,
+}: {
+  title: string
+  sub?: string
+  action?: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <section className="rounded-lg border border-border bg-card/40 p-4">
+      <header className="flex items-start justify-between gap-2 mb-3">
+        <div>
+          <h2 className="text-sm font-semibold leading-tight">{title}</h2>
+          {sub && <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>}
+        </div>
+        {action}
+      </header>
+      {children}
+    </section>
+  )
+}
+
+function AgeBar({
+  label,
+  sublabel,
+  count,
+  total,
+  tone,
+}: {
+  label: string
+  sublabel: string
+  count: number
+  total: number
+  tone: "ok" | "warn" | "danger"
+}) {
+  const pct = total ? Math.round((count / total) * 100) : 0
+  const barColor =
+    tone === "ok" ? "bg-emerald-500/70" : tone === "warn" ? "bg-amber-400/70" : "bg-destructive/70"
+  const textColor =
+    tone === "ok" ? "text-emerald-400" : tone === "warn" ? "text-amber-400" : "text-destructive"
+  return (
+    <div>
+      <div className="flex items-center justify-between text-xs mb-1">
+        <div className="text-foreground/85">
+          {label}
+          <span className="text-muted-foreground/70 font-normal"> · {sublabel}</span>
+        </div>
+        <div className={cn("tabular-nums font-medium", textColor)}>
+          {count}
+          <span className="text-muted-foreground font-normal"> · {pct}%</span>
+        </div>
+      </div>
+      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className={cn("h-full rounded-full", barColor)} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  )
+}
+
+function ActionLink({
+  href,
+  label,
+  Icon,
+}: {
+  href: string
+  label: string
+  Icon: typeof Plus
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between rounded-md border border-border/60 bg-card/30 px-3 py-2 hover:bg-secondary hover:border-border transition-colors"
+    >
+      <div className="flex items-center gap-2.5 min-w-0">
+        <span className="h-7 w-7 rounded-md bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors">
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <span className="text-sm text-foreground/85 truncate">{label}</span>
+      </div>
+      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+    </Link>
+  )
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-center py-6 text-xs text-muted-foreground">{children}</div>
+  )
+}
+
+// Suppress unused hint when /admin metrics use hotLeads etc.
+export const dynamic = "force-dynamic"
