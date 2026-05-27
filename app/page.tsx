@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { Logo } from "@/components/brand/logo"
 
 /* ─────────────────────────────────────────────────────────────────────
    LMCT PRO — landing page.
@@ -1325,15 +1326,8 @@ export default function HomePage() {
         {/* ─── Nav ───────────────────────────────────────────────────── */}
         <header className="lp-nav">
           <div className="lp-nav-row">
-            <Link href="/" className="lp-brand" aria-label="LMCT PRO home">
-              <span className="lp-mark" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f5f0e8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 17V9a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v8" />
-                  <circle cx="7.5" cy="17.5" r="2.5" />
-                  <circle cx="16.5" cy="17.5" r="2.5" />
-                </svg>
-              </span>
-              <span className="lp-brand-name">LMCT PRO</span>
+            <Link href="/" aria-label="LMCT PRO home" style={{ textDecoration: "none", color: "var(--ink)" }}>
+              <Logo size={34} tone="ink" />
             </Link>
             <nav className="lp-nav-links" aria-label="Primary">
               <a className="lp-nav-link" href="#platform">Platform</a>
@@ -1722,6 +1716,7 @@ export default function HomePage() {
 
         <footer className="lp-footer">
           <div className="lp-footer-inner">
+            <Logo size={28} tone="transparent" color="rgba(245,240,232,0.78)" />
             <span className="lp-footer-mono">© {new Date().getFullYear()} LMCT PRO PTY LTD · MELBOURNE</span>
             <div className="lp-footer-links">
               <a href="#">Privacy</a>

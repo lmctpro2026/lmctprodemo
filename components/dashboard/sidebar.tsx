@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { Logo } from "@/components/brand/logo"
 import {
   Car,
   LayoutDashboard,
@@ -60,11 +61,8 @@ export function DashboardSidebar() {
   return (
     <aside className="hidden lg:flex w-60 border-r border-border flex-col bg-card/50">
       <div className="h-16 px-4 border-b border-border flex items-center">
-        <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0">
-            <Car className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <span className="font-semibold tracking-tight truncate">LMCT PRO</span>
+        <Link href="/dashboard" aria-label="LMCT PRO home">
+          <Logo size={30} tone="transparent" color="#f1f0ff" />
         </Link>
       </div>
 

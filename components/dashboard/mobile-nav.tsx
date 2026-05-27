@@ -12,6 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { Logo } from "@/components/brand/logo"
 import {
   Menu,
   Car,
@@ -55,11 +56,10 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0">
         <SheetHeader className="p-4 border-b border-border">
-          <SheetTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Car className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span>LMCT PRO</span>
+          <SheetTitle asChild>
+            <span>
+              <Logo size={28} tone="transparent" color="#f1f0ff" />
+            </span>
           </SheetTitle>
         </SheetHeader>
         <nav className="p-4 space-y-1">

@@ -1,11 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
-  <g transform="translate(96 160)" fill="none" stroke="#22c55e" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M16 112 L52 40 Q60 24 80 24 L240 24 Q260 24 268 40 L304 112"/>
-    <rect x="8" y="112" width="304" height="80" rx="16" fill="#22c55e" fill-opacity="0.08"/>
-    <circle cx="72" cy="200" r="28" fill="#0a0a0a"/>
-    <circle cx="248" cy="200" r="28" fill="#0a0a0a"/>
-    <path d="M56 152 L80 152 M240 152 L264 152"/>
-  </g>
-  <text x="256" y="412" text-anchor="middle" fill="#22c55e" font-family="system-ui,-apple-system,Helvetica,Arial,sans-serif" font-weight="800" font-size="56" letter-spacing="2">LMCT PRO</text>
+  <!-- Ink ground -->
+  <rect width="512" height="512" rx="112" fill="#0d1117"/>
+  <!-- Heraldic gold ring -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#c8a96e" stroke-width="6" opacity="0.42"/>
+  <!-- Sedan silhouette: bonnet → A-pillar → roofline → C-pillar → boot.
+       Premium proportions — long bonnet, generous roof, short rear deck. -->
+  <path d="M 88 304 L 136 304 Q 152 224 208 184 L 304 184 Q 360 224 376 304 L 424 304"
+        fill="none" stroke="#c8a96e" stroke-width="16"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Body underline, broken at the wheel arches -->
+  <line x1="88"  y1="304" x2="144" y2="304" stroke="#c8a96e" stroke-width="16" stroke-linecap="round"/>
+  <line x1="208" y1="304" x2="304" y2="304" stroke="#c8a96e" stroke-width="16" stroke-linecap="round"/>
+  <line x1="368" y1="304" x2="424" y2="304" stroke="#c8a96e" stroke-width="16" stroke-linecap="round"/>
+  <!-- Wheels -->
+  <circle cx="176" cy="336" r="28" fill="#0d1117" stroke="#c8a96e" stroke-width="14"/>
+  <circle cx="336" cy="336" r="28" fill="#0d1117" stroke="#c8a96e" stroke-width="14"/>
 </svg>

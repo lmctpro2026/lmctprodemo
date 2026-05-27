@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { DemoForm } from "@/components/marketing/demo-form"
+import { Logo } from "@/components/brand/logo"
 
 export const metadata = {
   title: "Book a demo · LMCT PRO",
@@ -146,15 +147,8 @@ export default function DemoPage() {
 
       <header className="dp-nav">
         <div className="dp-nav-row">
-          <Link href="/" className="dp-brand">
-            <span className="dp-mark" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fdf8f0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 17V9a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v8" />
-                <circle cx="7.5" cy="17.5" r="2.5" />
-                <circle cx="16.5" cy="17.5" r="2.5" />
-              </svg>
-            </span>
-            LMCT PRO
+          <Link href="/" className="dp-brand" aria-label="LMCT PRO home">
+            <Logo size={32} tone="ink" />
           </Link>
           <Link href="/" className="dp-back">← Back to home</Link>
         </div>
