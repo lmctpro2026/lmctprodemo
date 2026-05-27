@@ -1351,7 +1351,16 @@ export default function HomePage() {
           max-width: 1240px; margin: 0 auto;
           padding: 0 28px;
         }
-        .lp-pricing-head { margin: 0 auto 56px; max-width: 720px; text-align: center; }
+        .lp-pricing-head { margin: 0 auto 24px; max-width: 720px; text-align: center; }
+        .lp-pricing-note {
+          max-width: 580px;
+          margin: 0 auto 48px;
+          text-align: center;
+          font-size: 14px;
+          line-height: 1.55;
+          color: var(--ink-muted);
+          font-family: var(--font-jakarta), system-ui, sans-serif;
+        }
         .lp-prices {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -1898,11 +1907,16 @@ export default function HomePage() {
               </h2>
             </div>
 
+            <p className="lp-pricing-note lp-reveal">
+              Quoted on the demo — sized to your yard, not someone else&rsquo;s. Same in
+              this industry as every other serious DMS.
+            </p>
+
             <div className="lp-prices">
               <Price
                 kicker="Software"
                 title="Software + AI"
-                amount={<>$249<span className="lp-price-per">/ month</span></>}
+                amount={<span className="lp-price-num-let">By demo</span>}
                 description="The full platform, on your phone and your laptop, with the assistant trained on your stock."
                 features={[
                   "Unlimited vehicles, sales and customers",
@@ -1918,7 +1932,7 @@ export default function HomePage() {
                 featured
                 kicker="Most chosen"
                 title="Done For You"
-                amount={<>$799<span className="lp-price-per">/ month</span></>}
+                amount={<span className="lp-price-num-let">By demo</span>}
                 description="We take the listings, the photo retouching, the buyer follow-up. You focus on buying and closing."
                 features={[
                   "Everything in Software + AI",
@@ -1933,7 +1947,7 @@ export default function HomePage() {
               <Price
                 kicker="Growth"
                 title="Growth"
-                amount={<><span className="lp-price-num-let">Let&rsquo;s talk</span></>}
+                amount={<span className="lp-price-num-let">By demo</span>}
                 description="Multi-yard operators, finance brokers, and dealer groups that need bespoke integration."
                 features={[
                   "Everything in Done For You",
@@ -1942,7 +1956,7 @@ export default function HomePage() {
                   "Dedicated specialist",
                   "Service-level agreement",
                 ]}
-                cta="Contact us for pricing"
+                cta="Talk to us"
                 href="/demo"
               />
             </div>
