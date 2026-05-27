@@ -1,27 +1,5 @@
 import Link from "next/link"
-import { Fraunces, Plus_Jakarta_Sans, DM_Mono } from "next/font/google"
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
-  variable: "--font-fraunces",
-  display: "swap",
-})
-
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-jakarta",
-  display: "swap",
-})
-
-const dmMono = DM_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-dm-mono",
-  display: "swap",
-})
+import { HeroShowcase } from "@/components/marketing/hero-showcase"
 
 // ── SVG icons. No emojis, no Lucide. Drawn for this brand. ───────────────
 function Arrow({ className = "" }: { className?: string }) {
@@ -34,7 +12,7 @@ function Arrow({ className = "" }: { className?: string }) {
 
 export default function HomePage() {
   return (
-    <div className={`${fraunces.variable} ${jakarta.variable} ${dmMono.variable}`}>
+    <div>
       <style>{`
         :root {
           --cream: #fdf8f0;
@@ -44,6 +22,10 @@ export default function HomePage() {
           --ink-3: #4a5567;
           --gold: #d4921a;
           --gold-2: #b87a12;
+          /* Money green — the hook colour. Used sparingly: dealer dollar figures,
+             MAX online indicator, hero glow, success states. Never dominant. */
+          --money: #10b981;
+          --money-2: #34d399;
           --rule: rgba(10, 22, 40, 0.10);
           --rule-2: rgba(10, 22, 40, 0.18);
         }
@@ -163,6 +145,254 @@ export default function HomePage() {
         .footnote { color: var(--ink-3); font-size: 13px; }
         @keyframes blink-soft { 0%, 100% { opacity: 1 } 50% { opacity: 0.5 } }
         .blink { animation: blink-soft 2.4s ease-in-out infinite; }
+
+        /* Money-coloured hero glow — sits behind the headline, subtle. */
+        .hero-glow::before {
+          content: "";
+          position: absolute;
+          top: -60px; right: -120px; width: 540px; height: 540px;
+          background: radial-gradient(closest-side, rgba(16, 185, 129, 0.18), transparent 70%);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        /* ─── HeroShowcase (Slack-style centered cycling tabs) ────────── */
+        .ls-section {
+          background: linear-gradient(180deg, var(--cream) 0%, var(--cream-2) 100%);
+          padding: 28px 0 80px;
+        }
+        .ls-section-head {
+          max-width: 720px;
+          margin: 0 auto 32px;
+          padding: 0 28px;
+          text-align: center;
+        }
+        .ls-showcase { max-width: 940px; margin: 0 auto; padding: 0 20px; }
+        .ls-frame {
+          background: linear-gradient(180deg, #12121e 0%, #0a0a12 100%);
+          border-radius: 22px;
+          border: 1px solid rgba(139, 92, 246, 0.18);
+          box-shadow:
+            0 60px 120px -40px rgba(10, 22, 40, 0.50),
+            0 30px 60px -20px rgba(139, 92, 246, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+          overflow: hidden;
+        }
+        .ls-chrome {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.05);
+          background: rgba(255,255,255,0.02);
+        }
+        .ls-dots { display: flex; gap: 6px; }
+        .ls-dots span { width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.16); }
+        .ls-url {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em;
+        }
+        .ls-max {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px; color: var(--money-2); letter-spacing: 0.12em;
+          display: inline-flex; align-items: center; gap: 6px;
+        }
+        .ls-pulse {
+          width: 6px; height: 6px; border-radius: 999px;
+          background: var(--money); box-shadow: 0 0 8px var(--money);
+          animation: ls-blink 2s ease-in-out infinite;
+        }
+        @keyframes ls-blink { 0%,100% { opacity: 1 } 50% { opacity: 0.45 } }
+
+        .ls-stage { position: relative; min-height: 460px; padding: 24px; }
+        .ls-panel {
+          position: absolute; inset: 24px;
+          opacity: 0;
+          transition: opacity 380ms cubic-bezier(.2,.8,.3,1);
+          pointer-events: none;
+        }
+        .ls-stage[data-active="stock"] .ls-panel[data-key="stock"],
+        .ls-stage[data-active="add"]   .ls-panel[data-key="add"],
+        .ls-stage[data-active="form"]  .ls-panel[data-key="form"],
+        .ls-stage[data-active="max"]   .ls-panel[data-key="max"]   { opacity: 1; pointer-events: auto; }
+
+        .ls-tabs {
+          display: flex; flex-wrap: wrap; justify-content: center;
+          gap: 8px; margin-top: 26px;
+        }
+        .ls-tab {
+          font-family: var(--font-jakarta), sans-serif;
+          font-size: 13px; font-weight: 500;
+          padding: 9px 16px; border-radius: 999px;
+          background: var(--cream);
+          border: 1px solid var(--rule-2);
+          color: var(--ink-2);
+          cursor: pointer;
+          display: inline-flex; align-items: center; gap: 8px;
+          transition: all 200ms cubic-bezier(.2,.8,.3,1);
+        }
+        .ls-tab:hover { border-color: var(--ink); transform: translateY(-1px); }
+        .ls-tab.is-active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+        .ls-tab-dot {
+          width: 6px; height: 6px; border-radius: 999px;
+          background: currentColor; opacity: 0.45;
+          transition: background 200ms, box-shadow 200ms, opacity 200ms;
+        }
+        .ls-tab.is-active .ls-tab-dot { background: var(--money-2); opacity: 1; box-shadow: 0 0 8px var(--money); }
+
+        .ls-mono   { font-family: var(--font-dm-mono), monospace; }
+        .ls-muted  { color: rgba(255,255,255,0.4); }
+        .ls-money  { color: var(--money-2); }
+        .ls-warn   { color: #fbbf24; }
+        .ls-danger { color: #fca5a5; }
+        .ls-violet { color: #a78bfa; }
+
+        /* Stock panel */
+        .ls-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+        .ls-kpi {
+          background: rgba(255,255,255,0.025);
+          border: 1px solid rgba(255,255,255,0.05);
+          border-radius: 8px; padding: 10px 12px;
+          display: flex; flex-direction: column; gap: 6px;
+        }
+        .ls-kpi-label { font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; }
+        .ls-kpi-value { font-size: 18px; font-weight: 500; color: #f1f0ff; line-height: 1; }
+        .ls-kpi-value.is-money { color: var(--money-2); }
+        .ls-rows {
+          background: rgba(255,255,255,0.02);
+          border: 1px solid rgba(255,255,255,0.05);
+          border-radius: 10px; overflow: hidden;
+        }
+        .ls-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .ls-row:last-child { border-bottom: 0; }
+        .ls-row-stock { font-size: 11px; color: rgba(255,255,255,0.4); width: 56px; }
+        .ls-row-car   { font-size: 13px; color: #f1f0ff; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ls-row-body  { font-size: 11px; color: rgba(255,255,255,0.4); width: 50px; }
+        .ls-row-days  { font-size: 12px; width: 36px; text-align: right; }
+        .ls-row-price { font-size: 13px; font-weight: 500; color: #f1f0ff; width: 80px; text-align: right; }
+
+        /* Add Vehicle panel — animated fields */
+        .ls-add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .ls-field {
+          background: rgba(255,255,255,0.025);
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 8px; padding: 10px 12px;
+          opacity: 0; transform: translateY(8px);
+        }
+        .ls-stage[data-active="add"] .ls-field {
+          animation: ls-field-in 0.5s cubic-bezier(.2,.8,.3,1) forwards;
+        }
+        @keyframes ls-field-in { to { opacity: 1; transform: none; } }
+        .ls-field-label { display: block; font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; margin-bottom: 4px; text-transform: uppercase; }
+        .ls-field-value { display: block; font-size: 13px; color: #f1f0ff; font-weight: 500; }
+        .ls-add-done {
+          margin-top: 16px;
+          display: inline-flex; align-items: center; gap: 10px;
+          padding: 10px 14px;
+          background: rgba(16,185,129,0.10);
+          border: 1px solid rgba(16,185,129,0.25);
+          border-radius: 10px;
+          color: var(--money-2);
+          font-size: 13px;
+          font-family: var(--font-jakarta), sans-serif;
+          opacity: 0;
+        }
+        .ls-stage[data-active="add"] .ls-add-done {
+          animation: ls-fade-in 0.6s cubic-bezier(.2,.8,.3,1) 3.6s forwards;
+        }
+        @keyframes ls-fade-in { to { opacity: 1; } }
+
+        /* Compliance form panel */
+        .ls-form-head { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+        .ls-form-kicker { font-size: 10px; color: var(--gold); letter-spacing: 0.18em; text-transform: uppercase; }
+        .ls-form-title { font-family: var(--font-fraunces), Georgia, serif; font-size: 20px; font-weight: 700; color: #f1f0ff; }
+        .ls-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .ls-formrow {
+          display: flex; flex-direction: column; gap: 4px;
+          opacity: 0; transform: translateY(6px);
+        }
+        .ls-stage[data-active="form"] .ls-formrow {
+          animation: ls-field-in 0.5s cubic-bezier(.2,.8,.3,1) forwards;
+        }
+        .ls-form-key { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.12em; text-transform: uppercase; }
+        .ls-form-val { font-size: 14px; color: #f1f0ff; font-weight: 500; }
+        .ls-form-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; }
+        .ls-docpill {
+          text-align: center;
+          padding: 10px;
+          border-radius: 8px;
+          background: rgba(212, 146, 26, 0.12);
+          border: 1px solid rgba(212, 146, 26, 0.25);
+          color: #fbbf24;
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          opacity: 0; transform: translateY(8px);
+        }
+        .ls-stage[data-active="form"] .ls-docpill {
+          animation: ls-field-in 0.4s cubic-bezier(.2,.8,.3,1) forwards;
+        }
+
+        /* MAX panel */
+        .ls-chat { display: flex; flex-direction: column; gap: 10px; }
+        .ls-bubble {
+          max-width: 80%;
+          padding: 10px 14px;
+          border-radius: 16px;
+          font-size: 13px; line-height: 1.5;
+          color: #f1f0ff;
+          opacity: 0; transform: translateY(8px);
+        }
+        .ls-stage[data-active="max"] .ls-bubble {
+          animation: ls-field-in 0.45s cubic-bezier(.2,.8,.3,1) forwards;
+        }
+        .ls-user {
+          align-self: flex-end; border-bottom-right-radius: 4px;
+          background: rgba(139, 92, 246, 0.18);
+          border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+        .ls-bubble.ls-max {
+          align-self: flex-start; border-bottom-left-radius: 4px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.06);
+          color: #f1f0ff;
+        }
+        .ls-bubble.is-muted { color: rgba(241,240,255,0.78); }
+        .ls-typing {
+          align-self: flex-start;
+          display: inline-flex; gap: 3px;
+          padding: 12px 14px;
+          background: rgba(255,255,255,0.04);
+          border-radius: 16px; border-bottom-left-radius: 4px;
+          opacity: 0; width: max-content;
+        }
+        .ls-stage[data-active="max"] .ls-typing {
+          animation: ls-fade-in 0.4s cubic-bezier(.2,.8,.3,1) forwards;
+        }
+        .ls-typing span {
+          width: 5px; height: 5px; border-radius: 999px;
+          background: rgba(255,255,255,0.45);
+          animation: ls-bounce 1s ease-in-out infinite;
+        }
+        .ls-typing span:nth-child(2) { animation-delay: 0.15s; }
+        .ls-typing span:nth-child(3) { animation-delay: 0.30s; }
+        @keyframes ls-bounce { 0%,100% { transform: translateY(0); opacity: 0.45; } 50% { transform: translateY(-3px); opacity: 1; } }
+        .ls-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+        .ls-tool {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          padding: 4px 10px;
+          border-radius: 999px;
+          background: rgba(139,92,246,0.10);
+          color: #c4b5fd;
+          border: 1px solid rgba(139,92,246,0.20);
+          letter-spacing: 0.04em;
+        }
+
+        @media (max-width: 720px) {
+          .ls-stage   { min-height: 520px; padding: 16px; }
+          .ls-panel   { inset: 16px; }
+          .ls-kpis    { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .ls-add-grid,
+          .ls-form-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
 
       <main className="lmct-root min-h-screen">
@@ -195,7 +425,7 @@ export default function HomePage() {
         <section className="relative pt-20 lg:pt-28 pb-24 lg:pb-32">
           <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
             <div className="lg:col-span-7">
-              <p className="kicker mb-6">For Licensed Motor Car Traders — VIC · NSW · QLD</p>
+              <p className="kicker mb-6">Built for Victorian LMCT dealers</p>
               <h1 className="h-display text-[52px] sm:text-[64px] lg:text-[78px]">
                 Run a <span className="serif italic font-normal" style={{ color: "var(--gold)" }}>tighter</span> yard.
                 <br />Sell with conviction.
@@ -203,18 +433,18 @@ export default function HomePage() {
               <p className="lede mt-8 text-[19px]">
                 LMCT PRO is the dealer management platform built for the way Australian
                 car traders actually work — auction Monday, recon Tuesday, listings live by Wednesday.
-                One screen for your stock, your sales, your compliance, and the assistant
+                One screen for your stock, your sales, your compliance, and an AI assistant
                 that knows your inventory by heart.
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-3">
-                <Link href="/auth/sign-up" className="btn-primary">
-                  Start free for 14 days <Arrow />
+                <Link href="/demo" className="btn-primary">
+                  Book a demo <Arrow />
                 </Link>
-                <a href="#platform" className="btn-ghost">
-                  See the platform
-                </a>
+                <Link href="/auth/sign-up" className="btn-ghost">
+                  Or start a 14-day trial
+                </Link>
               </div>
-              <p className="footnote mt-6">No credit card · Cancel anytime · Onboarded in under an hour.</p>
+              <p className="footnote mt-6">15-minute screenshare · No credit card · No sales pitch.</p>
             </div>
 
             {/* 3D mockup */}
@@ -226,36 +456,90 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ─── Showcase — Slack-style cycling product tabs ─────────────── */}
+        <section className="ls-section" id="platform">
+          <div className="ls-section-head">
+            <p className="kicker mb-3">Watch it run</p>
+            <h2 className="h-section text-[34px] sm:text-[42px]">
+              The platform, on stage.
+            </h2>
+            <p className="lede mx-auto mt-4" style={{ maxWidth: "54ch" }}>
+              Live stock, a vehicle being added in twelve seconds, a VP151 forming itself, and MAX
+              answering a real dealer question. Tap a tab — it&rsquo;ll keep cycling on its own.
+            </p>
+          </div>
+          <HeroShowcase />
+        </section>
+
         {/* ─── Trust strip ─────────────────────────────────────────────── */}
         <section className="border-y" style={{ borderColor: "var(--rule)", background: "var(--cream-2)" }}>
           <div className="mx-auto max-w-[1240px] px-6 lg:px-10 py-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Ticker label="LMCT compliance" body="VP151, dealings register, statutory warranty — generated, not chased." />
-            <Ticker label="Australian built" body="Designed around VicRoads, fairtrading.nsw.gov.au, and the ACL." />
+            <Ticker label="Australian built" body="Designed around VicRoads forms and the Australian Consumer Law." />
             <Ticker label="Mobile first" body="Add a car at the auction. Print a receipt from your phone. Install as an app." />
             <Ticker label="Your data, yours" body="Row-level isolation. Export everything as CSV the moment you ask." />
           </div>
         </section>
 
-        {/* ─── Pillar 1 — Inventory ────────────────────────────────────── */}
-        <section id="platform" className="py-28 lg:py-36">
+        {/* ─── The headline pillar: MAX (AI) — dark, the wow moment ────── */}
+        <section
+          className="py-28 lg:py-36 relative overflow-hidden"
+          style={{
+            background:
+              "radial-gradient(120% 100% at 100% 0%, rgba(16,185,129,0.12), transparent 55%), linear-gradient(180deg, #0a0a12 0%, #12121e 100%)",
+            color: "#f1f0ff",
+          }}
+        >
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+            <div className="lg:col-span-5">
+              <p className="kicker mb-4" style={{ color: "var(--money-2)" }}>The Assistant</p>
+              <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]" style={{ color: "#f1f0ff" }}>
+                You hire a colleague.
+                <span className="serif italic font-normal" style={{ color: "var(--money-2)" }}> Not a chatbot.</span>
+              </h2>
+              <p className="mt-6 text-[18px] leading-[1.55]" style={{ color: "rgba(241,240,255,0.72)", maxWidth: "56ch" }}>
+                MAX lives inside your dealership&rsquo;s data. Ask what&rsquo;s aged out,
+                what&rsquo;s margin-thin, what a buyer paid last December — get specific
+                answers in your dealership&rsquo;s tone of voice. Not a generic LLM
+                wrapper. Not a chatbot.
+              </p>
+              <p className="mt-5 mono text-[12px]" style={{ color: "rgba(241,240,255,0.45)", letterSpacing: "0.06em" }}>
+                Built on Claude. Prompt-cached. Tool-using. Trained on your stock at
+                every turn. The clever bits stay behind the demo.
+              </p>
+              <div className="mt-10">
+                <Link
+                  href="/demo"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold transition-transform hover:-translate-y-0.5"
+                  style={{ background: "var(--money)", color: "var(--ink)", fontSize: 15 }}
+                >
+                  See MAX on your stock <Arrow />
+                </Link>
+              </div>
+            </div>
+            <div className="lg:col-span-7">
+              <AssistantVignette />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Pillar 2 — Inventory ────────────────────────────────────── */}
+        <section className="py-28 lg:py-36">
           <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
             <div className="lg:col-span-5 order-2 lg:order-1">
-              <p className="kicker mb-4">01 — Inventory</p>
+              <p className="kicker mb-4">Inventory</p>
               <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]">
                 Every car answered for,
                 <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> every day.</span>
               </h2>
               <p className="lede mt-6">
-                A real working table — not a card grid. Sort by days held, filter by what&apos;s
-                missing, drop ten photos in at once, and let the assistant write the listing.
-                Stale stock surfaces before it costs you a margin point.
+                A real working table — not a card grid. Stale stock surfaces before it
+                costs you a margin point. Listings, scanner, photo cleanup, days-in-stock
+                bands — and another two dozen things that make Tuesday afternoons calmer.
               </p>
-              <ul className="mt-8 space-y-3.5">
-                <Feat>Days-in-stock with action bands at 30, 60 and 90.</Feat>
-                <Feat>Quality flags for No Photos · No Description · PPSR Pending.</Feat>
-                <Feat>Listing builder writes Facebook, Carsales and Gumtree copy from one click.</Feat>
-                <Feat>Scanner adds a vehicle from a rego plate in twelve seconds.</Feat>
-              </ul>
+              <p className="mt-5 mono text-[12px]" style={{ color: "var(--ink-3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                Full feature tour inside the demo.
+              </p>
             </div>
             <div className="lg:col-span-7 order-1 lg:order-2">
               <InventoryVignette />
@@ -263,57 +547,26 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ─── Pillar 2 — Compliance ───────────────────────────────────── */}
+        {/* ─── Pillar 3 — Compliance ───────────────────────────────────── */}
         <section className="py-28 lg:py-36" style={{ background: "var(--cream-2)" }}>
           <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
             <div className="lg:col-span-7">
               <ComplianceVignette />
             </div>
             <div className="lg:col-span-5">
-              <p className="kicker mb-4">02 — Compliance</p>
+              <p className="kicker mb-4">Compliance</p>
               <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]">
                 The forms, the register,
                 <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> the licence.</span>
               </h2>
               <p className="lede mt-6">
-                The paper that used to sit on your desk is now produced when you need
-                it and filed when you don&apos;t. The dealings register prints itself
-                quarterly. The buyer receipt goes out with the keys.
+                VP151 transfers, the dealings register, statutory warranty defaults, GST
+                summary, the buyer receipt — produced when you need them, filed when you
+                don&apos;t. The paper stops sitting on your desk.
               </p>
-              <ul className="mt-8 space-y-3.5">
-                <Feat>VicRoads VP151 transfer prepopulated from the sale.</Feat>
-                <Feat>Dealings register formatted to the LMCT requirement.</Feat>
-                <Feat>GST summary, BAS-ready. Quarterly export to your accountant.</Feat>
-                <Feat>Statutory warranty defaults to the VIC cars-under-10-year rule.</Feat>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── Pillar 3 — Assistant ────────────────────────────────────── */}
-        <section className="py-28 lg:py-36">
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-            <div className="lg:col-span-5">
-              <p className="kicker mb-4">03 — Intelligence</p>
-              <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]">
-                A digital colleague
-                <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> who knows your yard.</span>
-              </h2>
-              <p className="lede mt-6">
-                MAX answers questions about your business with your data — not a generic
-                chatbot. Ask &ldquo;what should I do with the white Tiguan?&rdquo; and you
-                get the days held, the asking price, the comparable sales and a
-                specific suggestion. Trained on your tone of voice.
+              <p className="mt-5 mono text-[12px]" style={{ color: "var(--ink-3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                Built around the way VicRoads and the ACL actually work.
               </p>
-              <ul className="mt-8 space-y-3.5">
-                <Feat>Lives inside your stock, sales and customer database.</Feat>
-                <Feat>Personalised — give MAX a name and a personality once.</Feat>
-                <Feat>Drafts listings, calculates margin, suggests action on aged stock.</Feat>
-                <Feat>Runs on Claude. Cached for speed, billed inside your subscription.</Feat>
-              </ul>
-            </div>
-            <div className="lg:col-span-7">
-              <AssistantVignette />
             </div>
           </div>
         </section>
@@ -417,8 +670,8 @@ export default function HomePage() {
                   "Buyer enquiry triage",
                   "Quarterly compliance audit",
                 ]}
-                cta="Talk to us"
-                href="mailto:hello@lmctpro.com.au"
+                cta="Book a demo"
+                href="/demo"
               />
               <PriceCard
                 kicker="At scale"
@@ -434,7 +687,7 @@ export default function HomePage() {
                   "Service-level agreement",
                 ]}
                 cta="Contact us for pricing"
-                href="mailto:hello@lmctpro.com.au"
+                href="/demo"
               />
             </div>
           </div>
@@ -494,19 +747,19 @@ export default function HomePage() {
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
               <Link
-                href="/auth/sign-up"
+                href="/demo"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold transition-transform hover:-translate-y-0.5"
-                style={{ background: "var(--cream)", color: "var(--ink)", fontSize: 15 }}
+                style={{ background: "var(--money)", color: "var(--ink)", fontSize: 15 }}
               >
-                Start free trial <Arrow />
+                Book a demo <Arrow />
               </Link>
-              <a
-                href="mailto:hello@lmctpro.com.au"
+              <Link
+                href="/auth/sign-up"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold border transition-colors hover:bg-white/5"
                 style={{ borderColor: "rgba(253,248,240,0.25)", color: "var(--cream)", fontSize: 15 }}
               >
-                Talk to a human
-              </a>
+                Or start the trial
+              </Link>
             </div>
           </div>
         </section>
