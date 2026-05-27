@@ -1,782 +1,860 @@
 import Link from "next/link"
-import { Fraunces } from "next/font/google"
+import { Fraunces, Plus_Jakarta_Sans, DM_Mono } from "next/font/google"
 
 const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["400", "700", "900"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   style: ["normal", "italic"],
   variable: "--font-fraunces",
+  display: "swap",
 })
 
-// SVG icon components — no emojis
-const IconCar = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2"/>
-    <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/>
-  </svg>
-)
-const IconChart = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
-    <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
-  </svg>
-)
-const IconFile = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-  </svg>
-)
-const IconUsers = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-    <circle cx="9" cy="7" r="4"/>
-    <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
-  </svg>
-)
-const IconBot = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="10" rx="2"/>
-    <circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="11"/>
-    <line x1="8" y1="15" x2="8" y2="15" strokeWidth="2"/><line x1="12" y1="15" x2="12" y2="15" strokeWidth="2"/><line x1="16" y1="15" x2="16" y2="15" strokeWidth="2"/>
-  </svg>
-)
-const IconPieChart = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/>
-  </svg>
-)
-const IconCamera = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-    <circle cx="12" cy="13" r="4"/>
-  </svg>
-)
-const IconSearch = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-  </svg>
-)
-const IconEdit = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-  </svg>
-)
-const IconCheck = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-)
-const IconArrow = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-  </svg>
-)
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jakarta",
+  display: "swap",
+})
 
-export default function LandingPage() {
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-dm-mono",
+  display: "swap",
+})
+
+// ── SVG icons. No emojis, no Lucide. Drawn for this brand. ───────────────
+function Arrow({ className = "" }: { className?: string }) {
   return (
-    <div className={fraunces.variable} style={{
-      fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
-      background: "#FAF8F3", color: "#0D1F3C", overflowX: "hidden",
-    }}>
+    <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" /><path d="M13 5l7 7-7 7" />
+    </svg>
+  )
+}
+
+export default function HomePage() {
+  return (
+    <div className={`${fraunces.variable} ${jakarta.variable} ${dmMono.variable}`}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .ff { font-family: var(--font-fraunces), Georgia, serif; }
-        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
-        @keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(139,92,246,0.3)} 50%{box-shadow:0 0 40px rgba(139,92,246,0.6)} }
-        .demo-card { transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease; cursor: default; }
-        .demo-card:hover { transform: translateY(-16px) rotateX(2deg) scale(1.03) !important; }
-        .feature-card { transition: all 0.25s ease; }
-        .feature-card:hover { transform: translateY(-6px); border-color: rgba(232,160,32,0.5) !important; background: white !important; }
-        .btn-cta { transition: all 0.2s ease; }
-        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(13,31,60,0.3); }
-        .btn-amber:hover { box-shadow: 0 12px 40px rgba(232,160,32,0.4) !important; }
-        .nav-a { text-decoration: none; font-size: 14px; font-weight: 500; color: #4A5568; transition: color 0.2s; }
-        .nav-a:hover { color: #E8A020; }
-        @media (max-width: 900px) {
-          .hero-g { grid-template-columns: 1fr !important; }
-          .demo-g { grid-template-columns: 1fr !important; }
-          .feat-g { grid-template-columns: 1fr 1fr !important; }
-          .price-g { grid-template-columns: 1fr !important; }
-          .stats-g { grid-template-columns: 1fr 1fr !important; }
-          .nav-links { display: none !important; }
+        :root {
+          --cream: #fdf8f0;
+          --cream-2: #f6efe1;
+          --ink: #0a1628;
+          --ink-2: #1d2a3f;
+          --ink-3: #4a5567;
+          --gold: #d4921a;
+          --gold-2: #b87a12;
+          --rule: rgba(10, 22, 40, 0.10);
+          --rule-2: rgba(10, 22, 40, 0.18);
         }
+        .lmct-root {
+          background: var(--cream);
+          color: var(--ink);
+          font-family: var(--font-jakarta), -apple-system, system-ui, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          font-feature-settings: "ss01", "ss02", "cv01";
+        }
+        .serif { font-family: var(--font-fraunces), Georgia, serif; font-feature-settings: "ss01"; }
+        .mono  { font-family: var(--font-dm-mono), ui-monospace, monospace; }
+        .kicker {
+          font-family: var(--font-dm-mono), ui-monospace, monospace;
+          font-size: 11px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--gold-2);
+        }
+        .nav-link {
+          font-family: var(--font-jakarta), sans-serif;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--ink-2);
+          transition: color 200ms cubic-bezier(.2,.8,.3,1);
+        }
+        .nav-link:hover { color: var(--ink); }
+        .btn-primary {
+          background: var(--ink);
+          color: var(--cream);
+          font-weight: 600;
+          padding: 14px 22px;
+          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          transition: transform 200ms cubic-bezier(.2,.8,.3,1), box-shadow 200ms cubic-bezier(.2,.8,.3,1);
+          font-size: 15px;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgba(10,22,40,0.4); }
+        .btn-ghost {
+          color: var(--ink);
+          font-weight: 600;
+          padding: 14px 20px;
+          border-radius: 999px;
+          border: 1px solid var(--rule-2);
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: transparent;
+          transition: background 200ms cubic-bezier(.2,.8,.3,1), border-color 200ms cubic-bezier(.2,.8,.3,1);
+          font-size: 15px;
+        }
+        .btn-ghost:hover { background: var(--cream-2); border-color: var(--ink-2); }
+        .h-display {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 700;
+          font-feature-settings: "ss01";
+          letter-spacing: -0.025em;
+          line-height: 0.95;
+          color: var(--ink);
+        }
+        .h-section {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 600;
+          letter-spacing: -0.018em;
+          line-height: 1;
+          color: var(--ink);
+        }
+        .lede { color: var(--ink-3); font-size: 18px; line-height: 1.55; max-width: 60ch; }
+        .panel {
+          background: var(--cream-2);
+          border: 1px solid var(--rule);
+          border-radius: 22px;
+        }
+        /* Hero dashboard mockup — composed in HTML, transformed in 3D */
+        .mockup-stage {
+          perspective: 2000px;
+          perspective-origin: 50% 30%;
+        }
+        .mockup {
+          background: linear-gradient(180deg, #12121e 0%, #0a0a12 100%);
+          border-radius: 18px;
+          border: 1px solid rgba(139, 92, 246, 0.18);
+          box-shadow:
+            0 60px 120px -40px rgba(10, 22, 40, 0.55),
+            0 30px 60px -20px rgba(139, 92, 246, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+          transform: rotateX(8deg) rotateY(-14deg) rotateZ(0.5deg);
+          transform-style: preserve-3d;
+          transition: transform 800ms cubic-bezier(.2,.8,.3,1);
+        }
+        .mockup:hover { transform: rotateX(4deg) rotateY(-8deg) rotateZ(0.5deg); }
+        .mockup-stat { font-family: var(--font-dm-mono), monospace; }
+        .mockup-row { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .mockup-row:last-child { border-bottom: 0; }
+        .mockup-dot { width: 6px; height: 6px; border-radius: 999px; }
+        .lift {
+          transition: transform 280ms cubic-bezier(.2,.8,.3,1), box-shadow 280ms cubic-bezier(.2,.8,.3,1);
+        }
+        .lift:hover { transform: translateY(-3px); box-shadow: 0 24px 50px -28px rgba(10,22,40,0.4); }
+        .gold-rule { background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent); height: 1px; }
+        .ticker-item { border-left: 1px solid var(--rule); }
+        .price-card { background: var(--cream); border: 1px solid var(--rule-2); border-radius: 22px; }
+        .price-card.featured { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+        .pill {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          padding: 4px 10px;
+          border-radius: 999px;
+          background: rgba(212, 146, 26, 0.12);
+          color: var(--gold-2);
+          border: 1px solid rgba(212, 146, 26, 0.25);
+        }
+        .footnote { color: var(--ink-3); font-size: 13px; }
+        @keyframes blink-soft { 0%, 100% { opacity: 1 } 50% { opacity: 0.5 } }
+        .blink { animation: blink-soft 2.4s ease-in-out infinite; }
       `}</style>
 
-      {/* ─── HEADER ─────────────────────────────────────────────── */}
-      <header style={{
-        position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(250,248,243,0.94)", backdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(13,31,60,0.07)",
-        padding: "0 48px", height: 64,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        {/* Logo — text only, no box */}
-        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
-          <span className="ff" style={{ fontSize: 22, fontWeight: 900, color: "#0D1F3C", letterSpacing: "-0.5px" }}>
-            LMCT<span style={{ color: "#E8A020" }}>PRO</span>
-          </span>
-        </Link>
+      <main className="lmct-root min-h-screen">
 
-        <nav className="nav-links" style={{ display: "flex", gap: 36, alignItems: "center" }}>
-          {["Platform","Our Service","How It Works","Pricing","FAQ"].map(item => (
-            <a key={item} href={`#${item.toLowerCase().replace(/\s+/g,"-")}`} className="nav-a">{item}</a>
-          ))}
-        </nav>
-
-        <Link href="/auth/sign-up" style={{ textDecoration: "none" }}>
-          <button className="btn-cta" style={{
-            background: "#0D1F3C", color: "#FAF8F3", border: "none",
-            borderRadius: 8, padding: "10px 22px", fontSize: 14, fontWeight: 700, cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 6,
-          }}>
-            Start Free Trial <IconArrow />
-          </button>
-        </Link>
-      </header>
-
-      {/* ─── HERO ───────────────────────────────────────────────── */}
-      <section style={{ padding: "72px 48px 56px", maxWidth: 1240, margin: "0 auto" }}>
-        <div className="hero-g" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
-          <div>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 7,
-              background: "rgba(232,160,32,0.1)", border: "1px solid rgba(232,160,32,0.25)",
-              borderRadius: 30, padding: "5px 14px", marginBottom: 28,
-            }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#E8A020", animation: "pulse 2s infinite" }}></div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#B8740A", letterSpacing: "1px", textTransform: "uppercase" }}>
-                For Australian LMCT Dealers
+        {/* ─── Top nav ─────────────────────────────────────────────────── */}
+        <header className="sticky top-0 z-40" style={{ backdropFilter: "blur(10px)", background: "rgba(253, 248, 240, 0.78)", borderBottom: "1px solid var(--rule)" }}>
+          <div className="mx-auto max-w-[1240px] flex items-center justify-between px-6 lg:px-10 h-16">
+            <Link href="/" className="flex items-center gap-2.5">
+              <Mark />
+              <span className="serif text-[19px] font-bold tracking-tight" style={{ color: "var(--ink)" }}>
+                LMCT PRO
               </span>
+            </Link>
+            <nav className="hidden md:flex items-center gap-7">
+              <a className="nav-link" href="#platform">Platform</a>
+              <a className="nav-link" href="#how">How it works</a>
+              <a className="nav-link" href="#voices">Dealers</a>
+              <a className="nav-link" href="#pricing">Pricing</a>
+            </nav>
+            <div className="flex items-center gap-3">
+              <Link href="/auth/login" className="nav-link hidden sm:inline">Sign in</Link>
+              <Link href="/auth/sign-up" className="btn-primary" style={{ padding: "10px 18px", fontSize: 14 }}>
+                Start trial <Arrow />
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        {/* ─── Hero ────────────────────────────────────────────────────── */}
+        <section className="relative pt-20 lg:pt-28 pb-24 lg:pb-32">
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+            <div className="lg:col-span-7">
+              <p className="kicker mb-6">For Licensed Motor Car Traders — VIC · NSW · QLD</p>
+              <h1 className="h-display text-[52px] sm:text-[64px] lg:text-[78px]">
+                Run a <span className="serif italic font-normal" style={{ color: "var(--gold)" }}>tighter</span> yard.
+                <br />Sell with conviction.
+              </h1>
+              <p className="lede mt-8 text-[19px]">
+                LMCT PRO is the dealer management platform built for the way Australian
+                car traders actually work — auction Monday, recon Tuesday, listings live by Wednesday.
+                One screen for your stock, your sales, your compliance, and the assistant
+                that knows your inventory by heart.
+              </p>
+              <div className="mt-10 flex flex-wrap items-center gap-3">
+                <Link href="/auth/sign-up" className="btn-primary">
+                  Start free for 14 days <Arrow />
+                </Link>
+                <a href="#platform" className="btn-ghost">
+                  See the platform
+                </a>
+              </div>
+              <p className="footnote mt-6">No credit card · Cancel anytime · Onboarded in under an hour.</p>
             </div>
 
-            <h1 className="ff" style={{
-              fontSize: "clamp(40px, 5.5vw, 68px)", fontWeight: 900,
-              lineHeight: 1.03, letterSpacing: "-1.5px", color: "#0D1F3C", marginBottom: 22,
-            }}>
-              Run your yard.<br />
-              We handle<br />
-              <em style={{ color: "#E8A020", fontStyle: "italic" }}>everything else.</em>
-            </h1>
+            {/* 3D mockup */}
+            <div className="lg:col-span-5">
+              <div className="mockup-stage">
+                <DashboardMockup />
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <p style={{ fontSize: 17, color: "#4A637A", lineHeight: 1.75, marginBottom: 36, maxWidth: 440 }}>
-              LMCT PRO combines <strong style={{ color: "#0D1F3C" }}>enterprise dealer software</strong> with a{" "}
-              <strong style={{ color: "#0D1F3C" }}>dedicated specialist</strong> who manages your listings, SEO, and paperwork — so every hour goes to selling, not typing.
+        {/* ─── Trust strip ─────────────────────────────────────────────── */}
+        <section className="border-y" style={{ borderColor: "var(--rule)", background: "var(--cream-2)" }}>
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 py-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Ticker label="LMCT compliance" body="VP151, dealings register, statutory warranty — generated, not chased." />
+            <Ticker label="Australian built" body="Designed around VicRoads, fairtrading.nsw.gov.au, and the ACL." />
+            <Ticker label="Mobile first" body="Add a car at the auction. Print a receipt from your phone. Install as an app." />
+            <Ticker label="Your data, yours" body="Row-level isolation. Export everything as CSV the moment you ask." />
+          </div>
+        </section>
+
+        {/* ─── Pillar 1 — Inventory ────────────────────────────────────── */}
+        <section id="platform" className="py-28 lg:py-36">
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+            <div className="lg:col-span-5 order-2 lg:order-1">
+              <p className="kicker mb-4">01 — Inventory</p>
+              <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]">
+                Every car answered for,
+                <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> every day.</span>
+              </h2>
+              <p className="lede mt-6">
+                A real working table — not a card grid. Sort by days held, filter by what&apos;s
+                missing, drop ten photos in at once, and let the assistant write the listing.
+                Stale stock surfaces before it costs you a margin point.
+              </p>
+              <ul className="mt-8 space-y-3.5">
+                <Feat>Days-in-stock with action bands at 30, 60 and 90.</Feat>
+                <Feat>Quality flags for No Photos · No Description · PPSR Pending.</Feat>
+                <Feat>Listing builder writes Facebook, Carsales and Gumtree copy from one click.</Feat>
+                <Feat>Scanner adds a vehicle from a rego plate in twelve seconds.</Feat>
+              </ul>
+            </div>
+            <div className="lg:col-span-7 order-1 lg:order-2">
+              <InventoryVignette />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Pillar 2 — Compliance ───────────────────────────────────── */}
+        <section className="py-28 lg:py-36" style={{ background: "var(--cream-2)" }}>
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+            <div className="lg:col-span-7">
+              <ComplianceVignette />
+            </div>
+            <div className="lg:col-span-5">
+              <p className="kicker mb-4">02 — Compliance</p>
+              <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]">
+                The forms, the register,
+                <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> the licence.</span>
+              </h2>
+              <p className="lede mt-6">
+                The paper that used to sit on your desk is now produced when you need
+                it and filed when you don&apos;t. The dealings register prints itself
+                quarterly. The buyer receipt goes out with the keys.
+              </p>
+              <ul className="mt-8 space-y-3.5">
+                <Feat>VicRoads VP151 transfer prepopulated from the sale.</Feat>
+                <Feat>Dealings register formatted to the LMCT requirement.</Feat>
+                <Feat>GST summary, BAS-ready. Quarterly export to your accountant.</Feat>
+                <Feat>Statutory warranty defaults to the VIC cars-under-10-year rule.</Feat>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Pillar 3 — Assistant ────────────────────────────────────── */}
+        <section className="py-28 lg:py-36">
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+            <div className="lg:col-span-5">
+              <p className="kicker mb-4">03 — Intelligence</p>
+              <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]">
+                A digital colleague
+                <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> who knows your yard.</span>
+              </h2>
+              <p className="lede mt-6">
+                MAX answers questions about your business with your data — not a generic
+                chatbot. Ask &ldquo;what should I do with the white Tiguan?&rdquo; and you
+                get the days held, the asking price, the comparable sales and a
+                specific suggestion. Trained on your tone of voice.
+              </p>
+              <ul className="mt-8 space-y-3.5">
+                <Feat>Lives inside your stock, sales and customer database.</Feat>
+                <Feat>Personalised — give MAX a name and a personality once.</Feat>
+                <Feat>Drafts listings, calculates margin, suggests action on aged stock.</Feat>
+                <Feat>Runs on Claude. Cached for speed, billed inside your subscription.</Feat>
+              </ul>
+            </div>
+            <div className="lg:col-span-7">
+              <AssistantVignette />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── How it works ────────────────────────────────────────────── */}
+        <section id="how" className="py-28 border-t" style={{ borderColor: "var(--rule)" }}>
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10">
+            <div className="grid lg:grid-cols-12 gap-12 mb-16">
+              <div className="lg:col-span-4">
+                <p className="kicker mb-3">How it works</p>
+                <h2 className="h-section text-[40px] sm:text-[48px]">
+                  An hour to set up. <br/>A morning to fall in love with it.
+                </h2>
+              </div>
+              <p className="lg:col-span-7 lg:col-start-6 lede self-end">
+                Most dealers we onboard are running a real sale through LMCT PRO by the end
+                of their first day. The team will move your existing stock in for you if
+                that&apos;s where you&apos;d rather start.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-10">
+              <Step n="01" title="Sign up" body="Drop your ABN, LMCT number and dealer details. We provision your workspace inside five minutes, isolated from every other dealer." />
+              <Step n="02" title="Bring in your stock" body="Photograph from your phone, paste a rego, or hand it to us — we&rsquo;ll import from your spreadsheet, CSV, or current DMS." />
+              <Step n="03" title="Sell on" body="Record sales, print transfers, email receipts. The numbers add themselves up at the end of the quarter." />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Voices ──────────────────────────────────────────────────── */}
+        <section id="voices" className="py-28" style={{ background: "var(--cream-2)" }}>
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10">
+            <p className="kicker mb-3">Dealers</p>
+            <h2 className="h-section text-[40px] sm:text-[48px] max-w-[14ch] mb-14">
+              Built around the way a real yard runs.
+            </h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <Quote
+                body="We were paying a bookkeeper to chase the dealings register every quarter. Now it prints itself. The aged-stock email pings me before I notice the car&rsquo;s gone stale."
+                who="James W."
+                where="Geelong"
+              />
+              <Quote
+                body="The listing builder gives me Facebook, Carsales and Gumtree copy in one click. Saturday morning is for selling cars again, not typing."
+                who="Anh N."
+                where="Bankstown"
+              />
+              <Quote
+                body="MAX knows my stock. I asked what to do with a 2018 Ranger sitting at 84 days — it gave me the comparables and a price. Sold it that week."
+                who="Marco D."
+                where="Brunswick"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Pricing ─────────────────────────────────────────────────── */}
+        <section id="pricing" className="py-28">
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10">
+            <div className="mb-14 grid lg:grid-cols-12 gap-8 items-end">
+              <div className="lg:col-span-7">
+                <p className="kicker mb-3">Pricing</p>
+                <h2 className="h-section text-[40px] sm:text-[48px]">
+                  Three ways to run your yard
+                  <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> on LMCT PRO.</span>
+                </h2>
+              </div>
+              <p className="lg:col-span-5 lede">
+                Start with the software and add hands when you&apos;re ready. All plans
+                include the assistant, all compliance reports, and unlimited stock.
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-5">
+              <PriceCard
+                kicker="Software"
+                title="Software + AI"
+                price="$249"
+                period="/ month"
+                description="The full platform, on your phone and your laptop, with the assistant trained on your stock."
+                features={[
+                  "Unlimited vehicles, sales and customers",
+                  "All compliance reports + PDF + CSV",
+                  "MAX, your AI assistant",
+                  "Resend buyer receipts",
+                  "Mobile / PWA install",
+                ]}
+                cta="Start free trial"
+                href="/auth/sign-up"
+              />
+              <PriceCard
+                featured
+                kicker="Most chosen"
+                title="Done For You"
+                price="$799"
+                period="/ month"
+                description="We take the listings, the photo retouching, the buyer follow-up. You focus on buying and closing."
+                features={[
+                  "Everything in Software + AI",
+                  "Listings written and posted for you",
+                  "Photo cleanup and watermarking",
+                  "Buyer enquiry triage",
+                  "Quarterly compliance audit",
+                ]}
+                cta="Talk to us"
+                href="mailto:hello@lmctpro.com.au"
+              />
+              <PriceCard
+                kicker="At scale"
+                title="Growth"
+                price="Let’s talk"
+                period=""
+                description="Multi-yard operators, finance brokers, and dealer groups that need bespoke integration."
+                features={[
+                  "Everything in Done For You",
+                  "Multi-yard consolidation",
+                  "Custom Carsales / AutoGrab integration",
+                  "Dedicated specialist",
+                  "Service-level agreement",
+                ]}
+                cta="Contact us for pricing"
+                href="mailto:hello@lmctpro.com.au"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── FAQ ─────────────────────────────────────────────────────── */}
+        <section className="py-28 border-t" style={{ borderColor: "var(--rule)" }}>
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12">
+            <div className="lg:col-span-4">
+              <p className="kicker mb-3">Questions</p>
+              <h2 className="h-section text-[40px] sm:text-[48px]">
+                Things dealers ask first.
+              </h2>
+              <p className="lede mt-6">
+                Don&rsquo;t see your question? Email us at{" "}
+                <a href="mailto:hello@lmctpro.com.au" className="underline underline-offset-4" style={{ color: "var(--ink)" }}>
+                  hello@lmctpro.com.au
+                </a>{" "}— we usually reply same-day.
+              </p>
+            </div>
+            <div className="lg:col-span-7 lg:col-start-6 divide-y" style={{ borderColor: "var(--rule)" }}>
+              <Faq
+                q="Will this replace my current DMS?"
+                a="Yes. LMCT PRO covers stock, sales, customers, compliance and reporting. We’ll migrate your existing data — CSV from a spreadsheet, export from your current system, or by hand if that’s easiest."
+              />
+              <Faq
+                q="Is it built for VIC dealers specifically?"
+                a="Built first for VIC because that’s where we know the rules best — VP151, statutory warranty, the dealings register requirement. NSW and QLD are first-class; other states are coming."
+              />
+              <Faq
+                q="What about my accountant?"
+                a="The GST report is BAS-ready. Quarterly CSV exports drop into Xero or MYOB cleanly. Direct Xero integration is on the roadmap; in the meantime accountants tell us our PDFs are easier to read than what they were getting before."
+              />
+              <Faq
+                q="How does the AI assistant get my data?"
+                a="The assistant runs server-side. Your stock, sales and customer records are read under your authenticated session — row-level security means no other dealer ever sees your data, including the AI. We use Claude under the hood and cache the system prompt to keep it fast and affordable."
+              />
+              <Faq
+                q="Can I leave?"
+                a="Any time. Export every record as CSV in one click. We keep no data hostage and we don’t lock you in."
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Final CTA ───────────────────────────────────────────────── */}
+        <section className="py-24" style={{ background: "var(--ink)", color: "var(--cream)" }}>
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 text-center">
+            <p className="kicker mb-5" style={{ color: "var(--gold)" }}>Start today</p>
+            <h2 className="serif text-[44px] sm:text-[60px] font-bold tracking-tight" style={{ lineHeight: 0.98 }}>
+              Fourteen days. <span className="italic font-normal" style={{ color: "var(--gold)" }}>No credit card.</span>
+            </h2>
+            <p className="mt-6 mx-auto max-w-[52ch] text-[17px]" style={{ color: "rgba(253,248,240,0.7)" }}>
+              Sign up, bring in a handful of vehicles, run a sale. If LMCT PRO doesn&rsquo;t
+              feel like the easiest software your dealership has ever used, we&rsquo;ll help
+              you export every record and part as friends.
             </p>
-
-            <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-              <Link href="/auth/sign-up" style={{ textDecoration: "none" }}>
-                <button className="btn-cta" style={{
-                  background: "#0D1F3C", color: "#FAF8F3", border: "none",
-                  borderRadius: 10, padding: "15px 30px", fontSize: 15, fontWeight: 700, cursor: "pointer",
-                  display: "flex", alignItems: "center", gap: 8,
-                }}>
-                  Try the Software Free — 14 Days <IconArrow />
-                </button>
+            <div className="mt-10 flex flex-wrap justify-center gap-3">
+              <Link
+                href="/auth/sign-up"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold transition-transform hover:-translate-y-0.5"
+                style={{ background: "var(--cream)", color: "var(--ink)", fontSize: 15 }}
+              >
+                Start free trial <Arrow />
               </Link>
-              <a href="#how-it-works" style={{ textDecoration: "none" }}>
-                <button style={{
-                  background: "transparent", color: "#0D1F3C",
-                  border: "1.5px solid rgba(13,31,60,0.18)", borderRadius: 10,
-                  padding: "15px 24px", fontSize: 15, fontWeight: 600, cursor: "pointer",
-                }}>
-                  See how it works
-                </button>
+              <a
+                href="mailto:hello@lmctpro.com.au"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold border transition-colors hover:bg-white/5"
+                style={{ borderColor: "rgba(253,248,240,0.25)", color: "var(--cream)", fontSize: 15 }}
+              >
+                Talk to a human
               </a>
             </div>
+          </div>
+        </section>
 
-            <p style={{ fontSize: 12, color: "#9AA5B4", marginBottom: 24 }}>
-              ✓ 14-day free trial · No credit card · Specialist plans start immediately
+        {/* ─── Footer ──────────────────────────────────────────────────── */}
+        <footer className="py-12 border-t" style={{ borderColor: "var(--rule)" }}>
+          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 flex flex-wrap items-center justify-between gap-6">
+            <div className="flex items-center gap-2.5">
+              <Mark />
+              <span className="serif text-[16px] font-bold tracking-tight" style={{ color: "var(--ink)" }}>LMCT PRO</span>
+            </div>
+            <p className="mono text-[11px]" style={{ color: "var(--ink-3)", letterSpacing: "0.06em" }}>
+              © {new Date().getFullYear()} LMCT PRO PTY LTD · MELBOURNE
             </p>
-
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              {[
-                { color: "#10B981", bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.2)", text: "Cars live in under 60 min" },
-                { color: "#B8740A", bg: "rgba(232,160,32,0.08)", border: "rgba(232,160,32,0.2)", text: "Save 15+ hrs per week" },
-              ].map(b => (
-                <div key={b.text} style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  background: b.bg, border: `1px solid ${b.border}`,
-                  borderRadius: 30, padding: "6px 14px",
-                }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: b.color }}></div>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: b.color }}>{b.text}</span>
-                </div>
-              ))}
+            <div className="flex items-center gap-6 text-[13px]" style={{ color: "var(--ink-3)" }}>
+              <a href="#" className="hover:opacity-80">Privacy</a>
+              <a href="#" className="hover:opacity-80">Terms</a>
+              <a href="mailto:hello@lmctpro.com.au" className="hover:opacity-80">Contact</a>
             </div>
           </div>
+        </footer>
+      </main>
+    </div>
+  )
+}
 
-          {/* Floating dashboard */}
-          <div style={{ animation: "float 5s ease-in-out infinite", perspective: 1000 }}>
-            <div style={{
-              background: "#0D1F3C", borderRadius: 16, overflow: "hidden",
-              boxShadow: "0 48px 140px rgba(13,31,60,0.4), 0 0 0 1px rgba(255,255,255,0.07)",
-              transform: "rotateY(-4deg) rotateX(2deg)",
-            }}>
-              <div style={{
-                background: "#162032", padding: "10px 16px",
-                display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid rgba(255,255,255,0.05)",
-              }}>
-                <div style={{ display: "flex", gap: 5 }}>
-                  {["#FF5F57","#FFBD2E","#28C840"].map(c => (
-                    <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }}></div>
-                  ))}
-                </div>
-                <div style={{
-                  flex: 1, background: "rgba(255,255,255,0.05)", borderRadius: 4,
-                  padding: "3px 10px", fontSize: 10, color: "rgba(255,255,255,0.3)",
-                }}>lmctpro.com.au / dashboard</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981", animation: "pulse 2s infinite" }}></div>
-                  <span style={{ fontSize: 10, color: "#10B981", fontWeight: 600 }}>AI Active</span>
-                </div>
-              </div>
-              <div style={{ padding: 20 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 16 }}>
-                  {[
-                    { l: "IN STOCK", v: "14" },
-                    { l: "SOLD MTD", v: "7" },
-                    { l: "GROSS PROFIT", v: "$38k", g: true },
-                  ].map(s => (
-                    <div key={s.l} style={{
-                      background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 12,
-                      border: "1px solid rgba(255,255,255,0.07)",
-                    }}>
-                      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", letterSpacing: "1px", marginBottom: 4 }}>{s.l}</div>
-                      <div style={{ fontSize: 22, fontWeight: 800, color: s.g ? "#10B981" : "#F1F0FF" }}>{s.v}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{
-                  background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: 14,
-                  border: "1px solid rgba(255,255,255,0.05)", marginBottom: 12,
-                }}>
-                  <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", letterSpacing: "1px", marginBottom: 10 }}>HANDLED BY YOUR SPECIALIST TODAY</div>
-                  {[
-                    ["CarSales listings live","3 ✓","#10B981"],
-                    ["Facebook + Gumtree","5 ✓","#10B981"],
-                    ["Enquiries responded","8 replied ✓","#10B981"],
-                    ["Compliance form","1 ready ✓","#E8A020"],
-                  ].map(([t,v,c]) => (
-                    <div key={t} style={{
-                      display: "flex", justifyContent: "space-between",
-                      fontSize: 11, padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,0.04)",
-                      color: "rgba(255,255,255,0.55)",
-                    }}>
-                      <span>{t}</span><span style={{ color: c as string, fontWeight: 600 }}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{
-                  background: "rgba(232,160,32,0.1)", borderRadius: 6, padding: "8px 12px",
-                  fontSize: 11, color: "#E8A020", fontWeight: 600, marginBottom: 8,
-                }}>⚡ Ranger — 73 days — drop to $29,990</div>
-                <div style={{
-                  background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.15)",
-                  borderRadius: 6, padding: "6px 10px", fontSize: 10, color: "#10B981", fontWeight: 600,
-                }}>
-                  Sedans selling <strong>3× faster</strong> than SUVs this month
-                </div>
-              </div>
-            </div>
-          </div>
+/* ── Components ──────────────────────────────────────────────────────── */
+
+function Mark() {
+  return (
+    <span
+      className="inline-flex items-center justify-center"
+      style={{ width: 32, height: 32, borderRadius: 8, background: "var(--ink)" }}
+      aria-hidden="true"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fdf8f0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 17V9a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v8" />
+        <circle cx="7.5" cy="17.5" r="2.5" />
+        <circle cx="16.5" cy="17.5" r="2.5" />
+      </svg>
+    </span>
+  )
+}
+
+function Ticker({ label, body }: { label: string; body: string }) {
+  return (
+    <div className="ticker-item pl-5">
+      <p className="kicker mb-1">{label}</p>
+      <p className="text-[14px] leading-relaxed" style={{ color: "var(--ink-2)" }}>{body}</p>
+    </div>
+  )
+}
+
+function Feat({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-3 text-[15px]" style={{ color: "var(--ink-2)" }}>
+      <span aria-hidden="true" className="mt-1.5 inline-block" style={{ width: 18, height: 1, background: "var(--gold)" }} />
+      <span>{children}</span>
+    </li>
+  )
+}
+
+function Step({ n, title, body }: { n: string; title: string; body: React.ReactNode }) {
+  return (
+    <div>
+      <p className="mono text-[13px] mb-3" style={{ color: "var(--gold-2)", letterSpacing: "0.16em" }}>{n}</p>
+      <h3 className="serif text-[26px] font-bold mb-2" style={{ color: "var(--ink)" }}>{title}</h3>
+      <p className="text-[15px] leading-relaxed" style={{ color: "var(--ink-3)" }}>{body}</p>
+    </div>
+  )
+}
+
+function Quote({ body, who, where }: { body: string; who: string; where: string }) {
+  return (
+    <figure className="panel p-7 lift">
+      <svg width="28" height="22" viewBox="0 0 28 22" fill="none" aria-hidden="true" style={{ marginBottom: 18 }}>
+        <path d="M0 22V13.5C0 6 4 1 11 0V4.5C7 5.5 4.5 8.5 4.5 13H11V22H0ZM17 22V13.5C17 6 21 1 28 0V4.5C24 5.5 21.5 8.5 21.5 13H28V22H17Z" fill="#d4921a" fillOpacity="0.35" />
+      </svg>
+      <blockquote className="serif text-[19px] leading-snug" style={{ color: "var(--ink)" }}>
+        {body}
+      </blockquote>
+      <figcaption className="mt-6 flex items-center gap-2 text-[13px]">
+        <span className="font-semibold" style={{ color: "var(--ink)" }}>{who}</span>
+        <span style={{ color: "var(--ink-3)" }}>·</span>
+        <span className="mono uppercase" style={{ color: "var(--ink-3)", letterSpacing: "0.12em", fontSize: 11 }}>{where}</span>
+      </figcaption>
+    </figure>
+  )
+}
+
+function PriceCard({
+  kicker, title, price, period, description, features, cta, href, featured,
+}: {
+  kicker: string; title: string; price: string; period: string; description: string;
+  features: string[]; cta: string; href: string; featured?: boolean;
+}) {
+  const body  = featured ? "rgba(253,248,240,0.88)" : "var(--ink-2)"
+  const muted = featured ? "rgba(253,248,240,0.65)" : "var(--ink-3)"
+  return (
+    <div className={`price-card lift p-8 flex flex-col${featured ? " featured" : ""}`}>
+      <div className="flex items-center justify-between">
+        <p className="pill" style={featured ? { background: "rgba(212,146,26,0.18)", color: "var(--gold)", borderColor: "rgba(212,146,26,0.35)" } : undefined}>{kicker}</p>
+      </div>
+      <h3 className="serif text-[28px] font-bold mt-5" style={{ color: featured ? "var(--cream)" : "var(--ink)" }}>{title}</h3>
+      <div className="mt-2 flex items-baseline gap-1.5">
+        <span className="mono text-[34px] font-medium" style={{ color: featured ? "var(--cream)" : "var(--ink)" }}>{price}</span>
+        {period && <span className="mono text-[14px]" style={{ color: muted }}>{period}</span>}
+      </div>
+      <p className="text-[15px] leading-relaxed mt-5" style={{ color: body }}>{description}</p>
+      <ul className="mt-7 space-y-2.5 flex-1">
+        {features.map((f) => (
+          <li key={f} className="flex items-start gap-3 text-[14px]" style={{ color: body }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={featured ? "var(--gold)" : "var(--gold-2)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mt-1 shrink-0">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href={href}
+        className="mt-9 inline-flex items-center justify-between rounded-full px-5 py-3 font-semibold transition-transform hover:-translate-y-0.5"
+        style={featured
+          ? { background: "var(--gold)", color: "var(--ink)", fontSize: 14 }
+          : { background: "var(--ink)", color: "var(--cream)", fontSize: 14 }}
+      >
+        <span>{cta}</span>
+        <Arrow />
+      </Link>
+    </div>
+  )
+}
+
+function Faq({ q, a }: { q: string; a: string }) {
+  return (
+    <details className="py-5 group">
+      <summary className="flex items-center justify-between cursor-pointer list-none">
+        <span className="serif text-[20px] font-semibold pr-6" style={{ color: "var(--ink)" }}>{q}</span>
+        <span className="shrink-0 grid place-items-center transition-transform group-open:rotate-45" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 999, border: "1px solid var(--rule-2)" }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </span>
+      </summary>
+      <p className="mt-3 max-w-[64ch] text-[15px] leading-relaxed" style={{ color: "var(--ink-3)" }}>{a}</p>
+    </details>
+  )
+}
+
+/* ── 3D dashboard mockup ────────────────────────────────────────────── */
+
+function DashboardMockup() {
+  return (
+    <div className="mockup p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1.5">
+          <span className="mockup-dot" style={{ background: "rgba(255,255,255,0.18)" }} />
+          <span className="mockup-dot" style={{ background: "rgba(255,255,255,0.18)" }} />
+          <span className="mockup-dot" style={{ background: "rgba(255,255,255,0.18)" }} />
         </div>
-      </section>
+        <span className="mockup-stat text-[10px]" style={{ color: "rgba(255,255,255,0.5)", letterSpacing: "0.1em" }}>LMCTPRO.COM.AU / DASHBOARD</span>
+        <span className="mockup-stat text-[10px] inline-flex items-center gap-1.5" style={{ color: "#a78bfa" }}>
+          <span className="blink" style={{ width: 6, height: 6, borderRadius: 999, background: "#a78bfa" }} />
+          MAX
+        </span>
+      </div>
 
-      {/* ─── TICKER ─────────────────────────────────────────────── */}
-      <div style={{ background: "#0D1F3C", padding: "13px 0", overflow: "hidden" }}>
-        <div style={{ display: "flex", animation: "ticker 35s linear infinite", whiteSpace: "nowrap" }}>
-          {[...Array(2)].map((_, i) => (
-            <div key={i} style={{ display: "flex" }}>
-              {["Assigned Specialist Included","Website + SEO Managed","No Lock-in Contracts","14-Day Free Trial","Compliance Auto-Fill","Facebook Marketplace","AI-Powered Listings","VicRoads Forms Auto-Fill","Plate Scan Technology","Market Intelligence","Morning Briefings","CarSales Integration"].map((item, j) => (
-                <span key={j} style={{
-                  fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)",
-                  padding: "0 32px", borderRight: "1px solid rgba(255,255,255,0.08)",
-                  letterSpacing: "1px", textTransform: "uppercase",
-                }}>{item}</span>
-              ))}
-            </div>
-          ))}
+      <div className="mb-4">
+        <p className="text-[13px] font-semibold" style={{ color: "#f1f0ff" }}>Westside Motors</p>
+        <p className="mockup-stat text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>WED · 27 MAY</p>
+      </div>
+
+      <div className="grid grid-cols-4 gap-2 mb-4">
+        <MockKpi label="IN STOCK"      value="42"    accent="#f1f0ff" />
+        <MockKpi label="SOLD MTD"      value="11"    accent="#10b981" />
+        <MockKpi label="REVENUE"       value="$284K" accent="#f1f0ff" />
+        <MockKpi label="PROFIT"        value="$48K"  accent="#10b981" />
+      </div>
+
+      <div className="rounded-lg p-2.5 mb-3 flex items-center gap-2" style={{ background: "rgba(239, 68, 68, 0.10)", border: "1px solid rgba(239, 68, 68, 0.22)" }}>
+        <span className="mockup-stat text-[10px] font-semibold" style={{ color: "#fca5a5" }}>3 VEHICLES AGED 60+</span>
+        <span className="mockup-stat text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>· $74K tied up</span>
+      </div>
+
+      <div className="rounded-lg overflow-hidden" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <MockRow rego="DPR76M" car="2017 VW Tiguan 132TSI"     days={15} price="$18,999"  tone="ok" />
+        <MockRow rego="VMDMR"  car="2022 Lamborghini Urus"      days={67} price="$369,000" tone="warn" />
+        <MockRow rego="2CY1PF" car="2018 Mercedes C300"         days={92} price="$32,500"  tone="danger" />
+        <MockRow rego="QRT332" car="2021 Toyota RAV4 Cruiser"   days={6}  price="$41,750"  tone="ok" />
+      </div>
+    </div>
+  )
+}
+
+function MockKpi({ label, value, accent }: { label: string; value: string; accent: string }) {
+  return (
+    <div className="rounded-md p-2.5" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)" }}>
+      <p className="mockup-stat text-[9px]" style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em" }}>{label}</p>
+      <p className="mockup-stat text-[18px] font-medium leading-tight mt-1" style={{ color: accent }}>{value}</p>
+    </div>
+  )
+}
+
+function MockRow({ rego, car, days, price, tone }: { rego: string; car: string; days: number; price: string; tone: "ok" | "warn" | "danger" }) {
+  const dColor = tone === "danger" ? "#fca5a5" : tone === "warn" ? "#fbbf24" : "#34d399"
+  return (
+    <div className="mockup-row flex items-center gap-3 px-3 py-2">
+      <span className="mockup-stat text-[10px]" style={{ color: "rgba(255,255,255,0.4)", width: 60 }}>{rego}</span>
+      <span className="text-[12px] flex-1 truncate" style={{ color: "#f1f0ff" }}>{car}</span>
+      <span className="mockup-stat text-[11px]" style={{ color: dColor }}>{days}d</span>
+      <span className="mockup-stat text-[11px] font-medium" style={{ color: "#f1f0ff", width: 64, textAlign: "right" }}>{price}</span>
+    </div>
+  )
+}
+
+/* ── Pillar vignettes ────────────────────────────────────────────────── */
+
+function InventoryVignette() {
+  return (
+    <div className="panel p-6 lg:p-8 lift">
+      <div className="flex items-center justify-between mb-5">
+        <span className="pill">Stock · 42 vehicles</span>
+        <div className="flex gap-1.5">
+          <span className="mono text-[10px] px-2 py-1 rounded-md" style={{ background: "var(--ink)", color: "var(--cream)" }}>TABLE</span>
+          <span className="mono text-[10px] px-2 py-1 rounded-md" style={{ border: "1px solid var(--rule-2)", color: "var(--ink-3)" }}>GRID</span>
+        </div>
+      </div>
+      <div className="space-y-1">
+        {[
+          { stock: "S-104", car: "2021 Toyota RAV4 Cruiser",     body: "SUV",   days: 6,  price: "$41,750", tone: "ok" },
+          { stock: "S-097", car: "2017 VW Tiguan 132TSI",        body: "SUV",   days: 15, price: "$18,999", tone: "ok" },
+          { stock: "S-088", car: "2022 Mazda CX-5 Akera",        body: "SUV",   days: 41, price: "$46,900", tone: "watch" },
+          { stock: "S-073", car: "2018 Mercedes C300",            body: "Sedan", days: 92, price: "$32,500", tone: "danger" },
+          { stock: "S-069", car: "2019 Hyundai i30 N-Line",      body: "Hatch", days: 11, price: "$24,990", tone: "ok" },
+        ].map((row) => (
+          <div key={row.stock} className="flex items-center gap-4 px-3 py-2.5 rounded-lg transition-colors hover:bg-white/40">
+            <span className="mono text-[12px]" style={{ color: "var(--ink-3)", width: 44 }}>{row.stock}</span>
+            <span className="text-[14px] flex-1 truncate" style={{ color: "var(--ink)" }}>{row.car}</span>
+            <span className="mono text-[12px]" style={{ color: "var(--ink-3)", width: 50 }}>{row.body}</span>
+            <span
+              className="mono text-[12px] font-medium"
+              style={{
+                color: row.tone === "danger" ? "#b91c1c" : row.tone === "watch" ? "#b45309" : "#047857",
+                width: 36, textAlign: "right",
+              }}
+            >
+              {row.days}d
+            </span>
+            <span className="mono text-[13px] font-medium" style={{ color: "var(--ink)", width: 72, textAlign: "right" }}>{row.price}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 flex items-center justify-between pt-5" style={{ borderTop: "1px solid var(--rule)" }}>
+        <p className="mono text-[11px]" style={{ color: "var(--ink-3)", letterSpacing: "0.1em" }}>QUALITY FILTERS</p>
+        <div className="flex gap-2 flex-wrap">
+          <span className="mono text-[10px] px-2.5 py-1 rounded-full" style={{ border: "1px solid var(--rule-2)", color: "var(--ink-2)" }}>No photos · 3</span>
+          <span className="mono text-[10px] px-2.5 py-1 rounded-full" style={{ border: "1px solid var(--rule-2)", color: "var(--ink-2)" }}>No description · 1</span>
+          <span className="mono text-[10px] px-2.5 py-1 rounded-full" style={{ border: "1px solid var(--rule-2)", color: "var(--ink-2)" }}>PPSR pending · 5</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ComplianceVignette() {
+  return (
+    <div className="panel p-6 lg:p-8 lift relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 gold-rule" />
+      <p className="kicker mb-4">VicRoads VP151 — Transfer of Registration</p>
+      <h3 className="serif text-[24px] font-bold mb-1" style={{ color: "var(--ink)" }}>2018 Mercedes-Benz C300</h3>
+      <p className="mono text-[12px]" style={{ color: "var(--ink-3)" }}>STOCK S-073 · REGO 2CY1PF · VIN WDDWF4DB8JR353201</p>
+
+      <div className="grid grid-cols-2 gap-x-8 gap-y-3 mt-7">
+        <FormRow k="Buyer"      v="Emma S." />
+        <FormRow k="Licence"    v="VIC · 09421003" />
+        <FormRow k="Address"    v="42 Park Road, Hawthorn" />
+        <FormRow k="Phone"      v="0413 552 081" />
+        <FormRow k="Sale date"  v="27 May 2026" />
+        <FormRow k="Sale price" v="$32,500.00" />
+        <FormRow k="Deposit"    v="$2,000.00" />
+        <FormRow k="Warranty"   v="Statutory · 3 mo / 5,000km" />
+      </div>
+
+      <div className="mt-7 grid grid-cols-3 gap-2.5">
+        <MiniPill label="Tax invoice" />
+        <MiniPill label="Transfer form" />
+        <MiniPill label="Buyer receipt" />
+      </div>
+    </div>
+  )
+}
+function FormRow({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="mono text-[10px] mb-1" style={{ color: "var(--ink-3)", letterSpacing: "0.12em", textTransform: "uppercase" }}>{k}</span>
+      <span className="text-[14px] font-medium" style={{ color: "var(--ink)" }}>{v}</span>
+    </div>
+  )
+}
+function MiniPill({ label }: { label: string }) {
+  return (
+    <div className="text-center py-2.5 rounded-lg mono text-[11px]" style={{ background: "var(--ink)", color: "var(--cream)", letterSpacing: "0.08em" }}>
+      {label}
+    </div>
+  )
+}
+
+function AssistantVignette() {
+  return (
+    <div
+      className="rounded-2xl p-6 lg:p-8 lift relative overflow-hidden"
+      style={{
+        background: "linear-gradient(160deg, #0a0a12 0%, #18182a 100%)",
+        border: "1px solid rgba(139,92,246,0.18)",
+        boxShadow: "0 30px 80px -30px rgba(139,92,246,0.25)",
+      }}
+    >
+      <div className="flex items-center gap-2 mb-6">
+        <span className="blink" style={{ width: 8, height: 8, borderRadius: 999, background: "#a78bfa" }} />
+        <span className="mono text-[11px]" style={{ color: "#a78bfa", letterSpacing: "0.18em" }}>MAX · ONLINE</span>
+      </div>
+
+      <div className="flex justify-end mb-3">
+        <div className="max-w-[80%] rounded-2xl rounded-br-sm px-4 py-3" style={{ background: "rgba(139,92,246,0.18)", border: "1px solid rgba(139,92,246,0.25)" }}>
+          <p className="text-[14px]" style={{ color: "#f1f0ff" }}>What should I do with the white Tiguan?</p>
         </div>
       </div>
 
-      {/* ─── STATS ──────────────────────────────────────────────── */}
-      <section style={{ padding: "64px 48px", background: "#FAF8F3" }}>
-        <div className="stats-g" style={{ maxWidth: 860, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
-          {[
-            { n: "15+", l: "Hours saved weekly", s: "vs manual admin" },
-            { n: "34%", l: "Revenue increase", s: "avg across dealers" },
-            { n: "3mo", l: "Typical payback", s: "from month one" },
-            { n: "60s", l: "Car live online", s: "plate to published" },
-          ].map(s => (
-            <div key={s.n} style={{ textAlign: "center", padding: "24px 12px" }}>
-              <div className="ff" style={{ fontSize: 52, fontWeight: 900, color: "#0D1F3C", lineHeight: 1 }}>{s.n}</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#0D1F3C", marginTop: 8 }}>{s.l}</div>
-              <div style={{ fontSize: 12, color: "#9AA5B4", marginTop: 3 }}>{s.s}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── AI IN ACTION ───────────────────────────────────────── */}
-      <section id="platform" style={{
-        background: "linear-gradient(160deg,#08061A 0%,#110D2B 45%,#0C1A33 100%)",
-        padding: "100px 48px 80px", position: "relative", overflow: "hidden",
-      }}>
-        {/* Orbs */}
-        <div style={{ position:"absolute",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(139,92,246,0.12),transparent 68%)",top:-200,left:-100,pointerEvents:"none" }}></div>
-        <div style={{ position:"absolute",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(16,185,129,0.08),transparent 68%)",bottom:-100,right:-60,pointerEvents:"none" }}></div>
-        <div style={{ position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,160,32,0.06),transparent 68%)",top:"40%",right:"20%",pointerEvents:"none" }}></div>
-
-        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
-          <div style={{ textAlign: "center", marginBottom: 72 }}>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)",
-              borderRadius: 30, padding: "7px 18px", marginBottom: 24,
-            }}>
-              <div style={{ width: 7,height: 7,borderRadius: "50%",background: "#A78BFA",animation: "pulse 1.5s infinite" }}></div>
-              <span style={{ fontSize: 11,fontWeight: 800,color: "#A78BFA",letterSpacing: "1.5px",textTransform: "uppercase" }}>
-                AI In Action — Live Demo
-              </span>
-            </div>
-            <h2 className="ff" style={{
-              fontSize: "clamp(30px,4.5vw,54px)", fontWeight: 900, color: "#F1F0FF",
-              lineHeight: 1.08, letterSpacing: "-1px", marginBottom: 18,
-            }}>
-              Plate scan to published listing<br />
-              <em style={{ background: "linear-gradient(135deg,#A78BFA 0%,#10B981 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                in under 60 seconds
-              </em>
-            </h2>
-            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", maxWidth: 440, margin: "0 auto", lineHeight: 1.75 }}>
-              No typing. No re-entering data. Just point, scan, and publish.
-            </p>
-          </div>
-
-          {/* 3 Cards */}
-          <div className="demo-g" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24, marginBottom: 56, perspective: 1200 }}>
-
-            {/* Card 1 */}
-            <div className="demo-card" style={{
-              background: "linear-gradient(145deg,rgba(139,92,246,0.08),rgba(109,40,217,0.04))",
-              border: "1px solid rgba(139,92,246,0.25)", borderRadius: 20, padding: 32,
-              position: "relative", overflow: "hidden",
-              boxShadow: "0 32px 80px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.07)",
-            }}>
-              <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(139,92,246,0.5),transparent)" }}></div>
-              <div style={{
-                width: 52,height: 52,borderRadius: 16,
-                background: "linear-gradient(135deg,rgba(139,92,246,0.3),rgba(109,40,217,0.15))",
-                display: "flex",alignItems: "center",justifyContent: "center",
-                marginBottom: 20,border: "1px solid rgba(139,92,246,0.3)",
-                color: "#A78BFA", animation: "glow 3s infinite",
-              }}>
-                <IconCamera />
-              </div>
-              <div style={{ fontSize: 10,fontWeight: 800,textTransform: "uppercase",letterSpacing: "1.5px",color: "#A78BFA",marginBottom: 10 }}>Step 1 · AI Plate Scanner</div>
-              <div className="ff" style={{ fontSize: 22,fontWeight: 900,color: "#F1F0FF",marginBottom: 10,letterSpacing: "-0.5px" }}>Point. Scan. Done.</div>
-              <div style={{ fontSize: 13,color: "rgba(255,255,255,0.4)",lineHeight: 1.75,marginBottom: 24 }}>Camera reads any Victorian plate instantly. Zero manual entry required.</div>
-              <div style={{ background: "rgba(0,0,0,0.35)",borderRadius: 12,padding: 18,border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{
-                  background: "linear-gradient(135deg,#F5C842,#E8A020)",
-                  borderRadius: 8,padding: "12px 18px",marginBottom: 14,
-                  display: "flex",justifyContent: "space-between",alignItems: "center",
-                  boxShadow: "0 4px 16px rgba(232,160,32,0.3)",
-                }}>
-                  <span style={{ fontSize: 9,color: "#1a1a1a",fontWeight: 900,letterSpacing: "1px" }}>VICTORIA</span>
-                  <span style={{ fontSize: 22,fontWeight: 900,color: "#1a1a1a",letterSpacing: "4px" }}>ABC 123</span>
-                  <span style={{ fontSize: 14 }}>⚡</span>
-                </div>
-                <div style={{
-                  display: "flex",alignItems: "center",gap: 8,
-                  background: "rgba(16,185,129,0.12)",borderRadius: 8,padding: "10px 14px",
-                  border: "1px solid rgba(16,185,129,0.2)",
-                }}>
-                  <div style={{ width: 8,height: 8,borderRadius: "50%",background: "#10B981",flexShrink: 0,animation: "pulse 2s infinite" }}></div>
-                  <span style={{ fontSize: 12,color: "#10B981",fontWeight: 600 }}>AI identified — 2021 Toyota RAV4</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="demo-card" style={{
-              background: "linear-gradient(145deg,rgba(16,185,129,0.07),rgba(5,150,105,0.03))",
-              border: "1px solid rgba(16,185,129,0.22)", borderRadius: 20, padding: 32,
-              position: "relative", overflow: "hidden",
-              boxShadow: "0 32px 80px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.07)",
-            }}>
-              <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(16,185,129,0.4),transparent)" }}></div>
-              <div style={{
-                width: 52,height: 52,borderRadius: 16,
-                background: "linear-gradient(135deg,rgba(16,185,129,0.28),rgba(5,150,105,0.12))",
-                display: "flex",alignItems: "center",justifyContent: "center",
-                marginBottom: 20,border: "1px solid rgba(16,185,129,0.3)",
-                color: "#10B981",
-              }}>
-                <IconSearch />
-              </div>
-              <div style={{ fontSize: 10,fontWeight: 800,textTransform: "uppercase",letterSpacing: "1.5px",color: "#10B981",marginBottom: 10 }}>Step 2 · Smart Rego Lookup</div>
-              <div className="ff" style={{ fontSize: 22,fontWeight: 900,color: "#F1F0FF",marginBottom: 10,letterSpacing: "-0.5px" }}>All fields. Auto-filled.</div>
-              <div style={{ fontSize: 13,color: "rgba(255,255,255,0.4)",lineHeight: 1.75,marginBottom: 24 }}>Make, model, year, compliance date — all populated in seconds.</div>
-              <div style={{ background: "rgba(0,0,0,0.35)",borderRadius: 12,padding: 18,border: "1px solid rgba(255,255,255,0.06)" }}>
-                {[
-                  ["Make","Toyota"],["Model","RAV4 GXL AWD"],["Year","2021"],
-                  ["Rego Expiry","Mar 2026"],["Compliance","Jan 2021"],
-                ].map(([l,v]) => (
-                  <div key={l} style={{
-                    display: "flex",justifyContent: "space-between",alignItems: "center",
-                    padding: "7px 0",borderBottom: "1px solid rgba(255,255,255,0.05)",fontSize: 12,
-                  }}>
-                    <span style={{ color: "rgba(255,255,255,0.35)" }}>{l}</span>
-                    <span style={{ color: "#10B981",fontWeight: 600,display: "flex",alignItems: "center",gap: 4 }}>
-                      {v} <IconCheck />
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="demo-card" style={{
-              background: "linear-gradient(145deg,rgba(232,160,32,0.07),rgba(180,83,9,0.03))",
-              border: "1px solid rgba(232,160,32,0.22)", borderRadius: 20, padding: 32,
-              position: "relative", overflow: "hidden",
-              boxShadow: "0 32px 80px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.07)",
-            }}>
-              <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba(232,160,32,0.4),transparent)" }}></div>
-              <div style={{
-                width: 52,height: 52,borderRadius: 16,
-                background: "linear-gradient(135deg,rgba(232,160,32,0.28),rgba(180,83,9,0.12))",
-                display: "flex",alignItems: "center",justifyContent: "center",
-                marginBottom: 20,border: "1px solid rgba(232,160,32,0.3)",
-                color: "#E8A020",
-              }}>
-                <IconEdit />
-              </div>
-              <div style={{ fontSize: 10,fontWeight: 800,textTransform: "uppercase",letterSpacing: "1.5px",color: "#E8A020",marginBottom: 10 }}>Step 3 · Smart Listing Builder</div>
-              <div className="ff" style={{ fontSize: 22,fontWeight: 900,color: "#F1F0FF",marginBottom: 10,letterSpacing: "-0.5px" }}>AI writes it for you.</div>
-              <div style={{ fontSize: 13,color: "rgba(255,255,255,0.4)",lineHeight: 1.75,marginBottom: 24 }}>Professional, SEO-optimised listing ready to publish in one click.</div>
-              <div style={{ background: "rgba(0,0,0,0.35)",borderRadius: 12,padding: 18,border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{ fontSize: 13,fontWeight: 700,color: "#F1F0FF",marginBottom: 8 }}>2021 Toyota RAV4 GXL AWD</div>
-                <p style={{ fontSize: 11,color: "rgba(255,255,255,0.4)",lineHeight: 1.7,marginBottom: 12 }}>
-                  One owner, full service history. This immaculate RAV4 presents in excellent condition throughout with low kilometres for the year...
-                </p>
-                <div style={{ display: "flex",gap: 6,flexWrap: "wrap" }}>
-                  {["CarSales Ready","SEO Optimised","1-Click Publish"].map(b => (
-                    <span key={b} style={{
-                      fontSize: 9,fontWeight: 700,padding: "4px 9px",
-                      background: "rgba(232,160,32,0.12)",color: "#E8A020",
-                      borderRadius: 5,border: "1px solid rgba(232,160,32,0.2)",letterSpacing: "0.3px",
-                    }}>{b}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ textAlign: "center" }}>
-            <Link href="/auth/sign-up" style={{ textDecoration: "none" }}>
-              <button className="btn-cta btn-amber" style={{
-                background: "linear-gradient(135deg,#A78BFA,#7C3AED)",
-                color: "white",border: "none",borderRadius: 10,
-                padding: "16px 40px",fontSize: 15,fontWeight: 700,cursor: "pointer",
-                display: "inline-flex",alignItems: "center",gap: 8,
-              }}>
-                See it live — Start Free Trial <IconArrow />
-              </button>
-            </Link>
-            <p style={{ marginTop: 12,fontSize: 12,color: "rgba(255,255,255,0.25)" }}>No credit card · Live in under 60 minutes</p>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── MAX AI ADVISOR ─────────────────────────────────────── */}
-      <section style={{ background: "#0D1F3C", padding: "80px 48px" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <div style={{ fontSize: 11,fontWeight: 700,color: "#E8A020",letterSpacing: "1.5px",textTransform: "uppercase",marginBottom: 14 }}>
-              Meet MAX — Your AI Advisor
-            </div>
-            <h2 className="ff" style={{ fontSize: "clamp(28px,4vw,46px)",fontWeight: 900,color: "#F1F0FF",lineHeight: 1.12,letterSpacing: "-0.5px" }}>
-              Knows your yard.<br />Tells you what to do.
-            </h2>
-            <p style={{ marginTop: 16,fontSize: 15,color: "rgba(255,255,255,0.4)",maxWidth: 460,margin: "16px auto 0",lineHeight: 1.75 }}>
-              MAX reads your stock, your sales history, and the national market — then tells you exactly what to buy, what to drop, and what to action today.
-            </p>
-          </div>
-          <div style={{
-            background: "rgba(255,255,255,0.03)",border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: 18,overflow: "hidden",maxWidth: 700,margin: "0 auto",
-            boxShadow: "0 24px 80px rgba(0,0,0,0.3)",
-          }}>
-            <div style={{
-              background: "rgba(255,255,255,0.025)",padding: "12px 18px",
-              borderBottom: "1px solid rgba(255,255,255,0.05)",
-              display: "flex",alignItems: "center",justifyContent: "space-between",
-            }}>
-              <div style={{ display: "flex",alignItems: "center",gap: 10 }}>
-                <div style={{
-                  width: 30,height: 30,borderRadius: "50%",background: "#E8A020",
-                  display: "flex",alignItems: "center",justifyContent: "center",
-                  fontSize: 13,fontWeight: 900,color: "#0D1F3C",
-                }}>M</div>
-                <span style={{ fontSize: 13,fontWeight: 600,color: "#F1F0FF" }}>MAX — AI Business Advisor</span>
-              </div>
-              <div style={{ display: "flex",alignItems: "center",gap: 5 }}>
-                <div style={{ width: 6,height: 6,borderRadius: "50%",background: "#10B981",animation: "pulse 2s infinite" }}></div>
-                <span style={{ fontSize: 11,color: "#10B981",fontWeight: 600 }}>Live</span>
-              </div>
-            </div>
-            <div style={{ padding: "24px 20px",display: "flex",flexDirection: "column",gap: 16 }}>
-              {[
-                { role:"user", text:"What should I stock up on before auction this week?" },
-                { role:"ai",   text:"Based on your last 90 days — Toyota and Mazda are your fastest movers at 19 days avg. You have 0 Toyotas right now. Your 3 large SUVs have been sitting 54 days — avoid that category this week." },
-                { role:"user", text:"Max buy on a 2020 Camry tomorrow?" },
-                { role:"ai",   text:"Your avg sell price on Camrys is $23,200. At 15% margin, max buy is $19,500 inc. recon. Pickles clearing at $17,800–$19,200 this week. You have room — go for it. ✓" },
-              ].map((msg, i) => (
-                <div key={i} style={{ display:"flex",gap: 10,justifyContent: msg.role==="user"?"flex-end":"flex-start" }}>
-                  {msg.role==="ai" && (
-                    <div style={{
-                      width: 28,height: 28,borderRadius: "50%",background: "#E8A020",
-                      display: "flex",alignItems: "center",justifyContent: "center",
-                      fontSize: 11,fontWeight: 900,color: "#0D1F3C",flexShrink: 0,marginTop: 2,
-                    }}>M</div>
-                  )}
-                  <div style={{
-                    maxWidth: "76%",padding: "11px 15px",borderRadius: 12,fontSize: 13,lineHeight: 1.65,
-                    background: msg.role==="user"?"rgba(232,160,32,0.12)":"rgba(255,255,255,0.05)",
-                    color: msg.role==="user"?"#E8C060":"rgba(255,255,255,0.78)",
-                    border: `1px solid ${msg.role==="user"?"rgba(232,160,32,0.18)":"rgba(255,255,255,0.05)"}`,
-                  }}>{msg.text}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{
-              padding: "14px 18px",borderTop: "1px solid rgba(255,255,255,0.05)",
-              display: "flex",gap: 10,alignItems: "center",
-            }}>
-              <div style={{
-                flex: 1,background: "rgba(255,255,255,0.04)",borderRadius: 8,
-                padding: "9px 14px",fontSize: 12,color: "rgba(255,255,255,0.2)",
-                border: "1px solid rgba(255,255,255,0.05)",
-              }}>Ask MAX anything about your yard...</div>
-              <div style={{
-                width: 36,height: 36,borderRadius: 8,
-                background: "rgba(232,160,32,0.18)",display: "flex",alignItems: "center",
-                justifyContent: "center",color: "#E8A020",cursor: "pointer",
-              }}><IconArrow /></div>
-            </div>
-          </div>
-          <p style={{ textAlign:"center",marginTop: 16,fontSize: 12,color: "rgba(255,255,255,0.2)" }}>
-            No generic AI · MAX reads YOUR stock · YOUR sales · YOUR margins
+      <div className="flex">
+        <div className="max-w-[88%] rounded-2xl rounded-bl-sm px-4 py-3.5" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <p className="text-[14px] leading-relaxed" style={{ color: "#f1f0ff" }}>
+            The <span style={{ color: "#a78bfa" }}>2017 Tiguan 132TSI (DPR76M)</span> has been on the lot 15 days at <span className="mono">$18,999</span>.
+          </p>
+          <p className="text-[14px] leading-relaxed mt-2" style={{ color: "rgba(241,240,255,0.78)" }}>
+            Comparables in your last 90 days sold around <span className="mono">$18.2K–$19.4K</span>, average 22 days held.
+            You&rsquo;re inside the band, slightly early. Hold for now — revisit at 30 days
+            and consider <span style={{ color: "#fbbf24" }}>$17,990</span> if no enquiries by then.
           </p>
         </div>
-      </section>
+      </div>
 
-      {/* ─── FEATURES ───────────────────────────────────────────── */}
-      <section id="our-service" style={{ background: "#FAF8F3", padding: "80px 48px" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
-          <div style={{ textAlign:"center",marginBottom: 56 }}>
-            <div style={{ fontSize: 11,fontWeight: 700,color: "#E8A020",letterSpacing: "1.5px",textTransform: "uppercase",marginBottom: 14 }}>Everything in one platform</div>
-            <h2 className="ff" style={{ fontSize: "clamp(28px,3.5vw,46px)",fontWeight: 900,color: "#0D1F3C",lineHeight: 1.12,letterSpacing: "-0.5px" }}>
-              Built for how dealers<br />actually work
-            </h2>
-          </div>
-          <div className="feat-g" style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap: 16 }}>
-            {[
-              { icon:<IconCar />,   title:"Stock Management",       desc:"Track your entire inventory with vehicle records, rego alerts, images, and live status updates." },
-              { icon:<IconChart />, title:"Sales & Profit Tracking", desc:"Real-time gross profit, margin %, and MTD performance across every single sale you make." },
-              { icon:<IconFile />,  title:"VicRoads Forms Auto-Fill",desc:"Transfer form DTP-1142, sales contract, and GST invoice generated and ready in 8 seconds." },
-              { icon:<IconUsers />, title:"Customer CRM",            desc:"Buyer and seller profiles with full transaction history, hot leads, and follow-up tracking." },
-              { icon:<IconBot />,   title:"MAX AI Advisor",          desc:"Morning briefings, auction guidance, price drop alerts, and market intelligence every day." },
-              { icon:<IconPieChart />,title:"Reports & Analytics",   desc:"Stocktake, aged stock, GST/BAS, turn rate, and P&L — all in one click, always current." },
-            ].map(f => (
-              <div key={f.title} className="feature-card" style={{
-                background: "#FDFCF9",borderRadius: 14,padding: 28,
-                border: "1px solid rgba(13,31,60,0.07)",
-              }}>
-                <div style={{
-                  width: 48,height: 48,borderRadius: 12,
-                  background: "rgba(13,31,60,0.05)",display: "flex",alignItems: "center",
-                  justifyContent: "center",color: "#0D1F3C",marginBottom: 18,
-                }}>{f.icon}</div>
-                <div style={{ fontSize: 15,fontWeight: 700,color: "#0D1F3C",marginBottom: 8 }}>{f.title}</div>
-                <div style={{ fontSize: 13,color: "#4A637A",lineHeight: 1.75 }}>{f.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── HOW IT WORKS ───────────────────────────────────────── */}
-      <section id="how-it-works" style={{ background: "#0D1F3C", padding: "80px 48px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ textAlign:"center",marginBottom: 56 }}>
-            <div style={{ fontSize: 11,fontWeight: 700,color: "#E8A020",letterSpacing: "1.5px",textTransform: "uppercase",marginBottom: 14 }}>How it works</div>
-            <h2 className="ff" style={{ fontSize: "clamp(28px,3.5vw,46px)",fontWeight: 900,color: "#F1F0FF",lineHeight: 1.12,letterSpacing: "-0.5px" }}>
-              Live in under an hour
-            </h2>
-          </div>
-          <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap: 40 }}>
-            {[
-              { n:"01",t:"Sign up & add your stock",d:"Enter your vehicles in minutes. Plate scan fills everything automatically — no manual typing ever." },
-              { n:"02",t:"Your specialist gets to work",d:"We list your cars on Carsales, Facebook, and your dealer website. Handle every enquiry within the hour." },
-              { n:"03",t:"Sell more. Do less admin.",d:"MAX briefs you every morning. Compliance forms auto-fill. You focus on the lot, we handle everything else." },
-            ].map(s => (
-              <div key={s.n} style={{ textAlign:"center" }}>
-                <div className="ff" style={{ fontSize: 64,fontWeight: 900,color: "rgba(232,160,32,0.15)",lineHeight: 1,marginBottom: 20 }}>{s.n}</div>
-                <div style={{ fontSize: 17,fontWeight: 700,color: "#F1F0FF",marginBottom: 10 }}>{s.t}</div>
-                <div style={{ fontSize: 13,color: "rgba(255,255,255,0.4)",lineHeight: 1.75 }}>{s.d}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── PRICING ────────────────────────────────────────────── */}
-      <section id="pricing" style={{ background: "#FAF8F3", padding: "80px 48px" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
-          <div style={{ textAlign:"center",marginBottom: 56 }}>
-            <div style={{ fontSize: 11,fontWeight: 700,color: "#E8A020",letterSpacing: "1.5px",textTransform: "uppercase",marginBottom: 14 }}>Pricing</div>
-            <h2 className="ff" style={{ fontSize: "clamp(28px,3.5vw,46px)",fontWeight: 900,color: "#0D1F3C",lineHeight: 1.12,letterSpacing: "-0.5px" }}>
-              Three plans. One for every dealer.
-            </h2>
-            <p style={{ marginTop: 12,fontSize: 15,color: "#4A637A" }}>No lock-in. No hidden fees. Cancel anytime.</p>
-          </div>
-          <div className="price-g" style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap: 20 }}>
-            {[
-              {
-                name:"Software + AI", price:"$299", setup:"+ $499 setup",
-                desc:"The full platform for dealers who want to run it themselves.",
-                features:["Full DMS — stock, sales, CRM","All AI features (MAX)","Compliance forms in 8 seconds","6 report types","Morning briefings","14-day free trial"],
-                cta:"Start Free Trial", highlight:false,
-              },
-              {
-                name:"Done For You", price:"$799", setup:"+ $299 setup",
-                desc:"Software plus a dedicated specialist who manages the work for you.",
-                features:["Everything in Software","Assigned specialist","Listings managed for you","All enquiries handled","Dealer website built","Priority support"],
-                cta:"Get Started", highlight:true,
-              },
-              {
-                name:"Grow For You", price:"$1,499", setup:"No setup fee",
-                desc:"Full managed service plus SEO, Google, and social growth.",
-                features:["Everything in Done For You","SEO managed monthly","Google Business Profile","Social media managed","Facebook Marketplace","Monthly growth report"],
-                cta:"Get Started", highlight:false,
-              },
-            ].map(plan => (
-              <div key={plan.name} style={{
-                background: plan.highlight ? "#0D1F3C" : "white",
-                border: `${plan.highlight ? 2 : 1}px solid ${plan.highlight ? "#E8A020" : "rgba(13,31,60,0.08)"}`,
-                borderRadius: 16,padding: 30,
-                transform: plan.highlight ? "scale(1.04)" : "scale(1)",
-                boxShadow: plan.highlight ? "0 32px 80px rgba(13,31,60,0.25)" : "none",
-                position: "relative",
-              }}>
-                {plan.highlight && (
-                  <div style={{
-                    position:"absolute",top: -13,left: "50%",transform: "translateX(-50%)",
-                    background: "#E8A020",color: "#0D1F3C",fontSize: 10,fontWeight: 800,
-                    padding: "4px 16px",borderRadius: 20,letterSpacing: "0.5px",whiteSpace: "nowrap",
-                  }}>MOST POPULAR</div>
-                )}
-                <div style={{ fontSize: 12,fontWeight: 700,color: plan.highlight?"#E8A020":"#0D1F3C",marginBottom: 6 }}>{plan.name}</div>
-                <div className="ff" style={{ fontSize: 46,fontWeight: 900,color: plan.highlight?"#F1F0FF":"#0D1F3C",lineHeight: 1 }}>{plan.price}</div>
-                <div style={{ fontSize: 12,color: plan.highlight?"rgba(255,255,255,0.35)":"#9AA5B4",marginBottom: 16 }}>/mo · {plan.setup}</div>
-                <p style={{ fontSize: 13,color: plan.highlight?"rgba(255,255,255,0.5)":"#4A637A",marginBottom: 22,lineHeight: 1.7 }}>{plan.desc}</p>
-                <div style={{ borderTop:`1px solid ${plan.highlight?"rgba(255,255,255,0.08)":"rgba(13,31,60,0.07)"}`,paddingTop: 22,marginBottom: 24 }}>
-                  {plan.features.map(f => (
-                    <div key={f} style={{ display:"flex",alignItems:"center",gap: 10,padding: "5px 0",fontSize: 13,color: plan.highlight?"rgba(255,255,255,0.65)":"#4A637A" }}>
-                      <span style={{ color:"#10B981",flexShrink: 0 }}><IconCheck /></span>{f}
-                    </div>
-                  ))}
-                </div>
-                <Link href="/auth/sign-up" style={{ textDecoration:"none" }}>
-                  <button style={{
-                    width:"100%",padding: "13px",borderRadius: 9,fontWeight: 700,fontSize: 14,
-                    cursor:"pointer",border:"none",
-                    background: plan.highlight?"#E8A020":"#0D1F3C",
-                    color: plan.highlight?"#0D1F3C":"#FAF8F3",
-                    display:"flex",alignItems:"center",justifyContent:"center",gap: 6,
-                  }}>
-                    {plan.cta} <IconArrow />
-                  </button>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── TESTIMONIALS ───────────────────────────────────────── */}
-      <section style={{ background:"#0D1F3C",padding:"80px 48px" }}>
-        <div style={{ maxWidth:1000,margin:"0 auto" }}>
-          <div style={{ textAlign:"center",marginBottom:48 }}>
-            <h2 className="ff" style={{ fontSize:"clamp(26px,3.5vw,44px)",fontWeight:900,color:"#F1F0FF",letterSpacing:"-0.5px" }}>
-              Real dealers. Real results.
-            </h2>
-          </div>
-          <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20 }}>
-            {[
-              { q:"I saved over 15 hours a week I used to waste on admin and listings. My revenue went up 34% in three months.", s:"15hrs · 34% · 3mo", d:"Dealer — Dandenong VIC", p:"Grow For You" },
-              { q:"Used to spend Sunday nights doing everything. Now it's done by lunch. Get to my leads within the hour thanks to the specialist.", s:"Sunday admin → gone", d:"Dealer — Sunshine VIC", p:"Done For You" },
-              { q:"Page 1 on Google in 3 weeks. I stopped advertising completely. The SEO alone pays for the whole subscription.", s:"Page 1 · 3 weeks", d:"Dealer — Pakenham VIC", p:"Grow For You" },
-            ].map(t => (
-              <div key={t.q} style={{
-                background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",
-                borderRadius:14,padding:24,
-              }}>
-                <div style={{ display:"flex",gap:2,marginBottom:14 }}>
-                  {[...Array(5)].map((_,i) => <span key={i} style={{ color:"#E8A020",fontSize:14 }}>★</span>)}
-                </div>
-                <p style={{ fontSize:13,color:"rgba(255,255,255,0.65)",lineHeight:1.75,marginBottom:16 }}>"{t.q}"</p>
-                <div style={{
-                  background:"rgba(232,160,32,0.08)",borderRadius:6,padding:"5px 10px",
-                  fontSize:11,color:"#E8A020",fontWeight:700,marginBottom:12,display:"inline-block",
-                }}>{t.s}</div>
-                <div style={{ fontSize:12,color:"rgba(255,255,255,0.35)" }}>{t.d}</div>
-                <div style={{ fontSize:11,color:"rgba(255,255,255,0.2)",marginTop:2 }}>{t.p}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── CTA ────────────────────────────────────────────────── */}
-      <section style={{ background:"#FAF8F3",padding:"80px 48px",textAlign:"center" }}>
-        <div style={{ maxWidth:580,margin:"0 auto" }}>
-          <h2 className="ff" style={{ fontSize:"clamp(28px,4vw,50px)",fontWeight:900,color:"#0D1F3C",letterSpacing:"-0.5px",marginBottom:18 }}>
-            Ready to run your yard properly?
-          </h2>
-          <p style={{ fontSize:16,color:"#4A637A",marginBottom:36,lineHeight:1.75 }}>
-            Join Victorian dealers already using LMCT PRO to sell more, work less, and stop losing hours to admin.
-          </p>
-          <Link href="/auth/sign-up" style={{ textDecoration:"none" }}>
-            <button className="btn-cta" style={{
-              background:"#0D1F3C",color:"#FAF8F3",border:"none",
-              borderRadius:10,padding:"16px 44px",fontSize:16,fontWeight:700,cursor:"pointer",
-              display:"inline-flex",alignItems:"center",gap:8,
-            }}>
-              Start Free Trial — 14 Days <IconArrow />
-            </button>
-          </Link>
-          <p style={{ marginTop:12,fontSize:12,color:"#9AA5B4" }}>No credit card required</p>
-        </div>
-      </section>
-
-      {/* ─── FOOTER ─────────────────────────────────────────────── */}
-      <footer style={{ background:"#0D1F3C",padding:"28px 48px",borderTop:"1px solid rgba(255,255,255,0.05)" }}>
-        <div style={{ maxWidth:1120,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12 }}>
-          <span className="ff" style={{ fontSize:18,fontWeight:900,color:"#F1F0FF" }}>
-            LMCT<span style={{ color:"#E8A020" }}>PRO</span>
+      <div className="mt-6 flex flex-wrap gap-2">
+        {["lookup_vehicle_by_rego", "stock_summary", "top_makes_last_n_days"].map((t) => (
+          <span key={t} className="mono text-[10px] px-2.5 py-1 rounded-full" style={{ background: "rgba(139,92,246,0.10)", color: "#c4b5fd", border: "1px solid rgba(139,92,246,0.20)", letterSpacing: "0.04em" }}>
+            {t}()
           </span>
-          <p style={{ fontSize:12,color:"rgba(255,255,255,0.25)" }}>Built for Australian Licensed Motor Car Traders</p>
-        </div>
-      </footer>
+        ))}
+      </div>
     </div>
   )
 }

@@ -1,31 +1,35 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-jakarta), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  --font-serif: var(--font-fraunces), Georgia, serif;
 
-  --color-background: #0a0a0a;
-  --color-foreground: #fafafa;
-  --color-muted: #171717;
-  --color-muted-foreground: #a1a1aa;
-  --color-card: #141414;
-  --color-card-foreground: #fafafa;
-  --color-popover: #141414;
-  --color-popover-foreground: #fafafa;
-  --color-border: #27272a;
-  --color-input: #27272a;
-  --color-primary: #22c55e;
-  --color-primary-foreground: #0a0a0a;
-  --color-secondary: #262626;
-  --color-secondary-foreground: #fafafa;
-  --color-accent: #22c55e;
-  --color-accent-foreground: #0a0a0a;
+  /* Dealer platform palette — Linear × Raycast × Bloomberg.
+     Stepped dark with a blue undertone, violet as the working accent,
+     emerald for money/success, amber for warn, red for danger/aged. */
+  --color-background: #0a0a12;
+  --color-foreground: #f1f0ff;
+  --color-muted: #12121e;
+  --color-muted-foreground: #9b96c4;
+  --color-card: #18182a;
+  --color-card-foreground: #f1f0ff;
+  --color-popover: #1e1e32;
+  --color-popover-foreground: #f1f0ff;
+  --color-border: rgba(139, 92, 246, 0.12);
+  --color-input: rgba(139, 92, 246, 0.18);
+  --color-primary: #8b5cf6;
+  --color-primary-foreground: #f1f0ff;
+  --color-secondary: #1e1e32;
+  --color-secondary-foreground: #f1f0ff;
+  --color-accent: #8b5cf6;
+  --color-accent-foreground: #f1f0ff;
   --color-destructive: #ef4444;
   --color-destructive-foreground: #fafafa;
-  --color-ring: #22c55e;
-  --color-success: #22c55e;
+  --color-ring: #8b5cf6;
+  --color-success: #10b981;
   --color-warning: #f59e0b;
-  --color-info: #3b82f6;
+  --color-info: #8b5cf6;
 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -62,13 +66,16 @@ body {
   background: var(--color-muted-foreground);
 }
 
-/* Gradient text utility */
+/* Gradient text utility — violet ramp */
 .gradient-text {
-  background: linear-gradient(135deg, #22c55e 0%, #10b981 50%, #059669 100%);
+  background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 50%, #8b5cf6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Numbers in the dealer UI render in DM Mono with tabular figures. */
+.tabular-nums { font-family: var(--font-dm-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 
 /* Glass effect */
 .glass {

@@ -1,10 +1,28 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { Plus_Jakarta_Sans, DM_Mono, Fraunces } from "next/font/google"
 import { Toaster } from "sonner"
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register"
 import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jakarta",
+  display: "swap",
+})
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-dm-mono",
+  display: "swap",
+})
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-fraunces",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "LMCT PRO - Dealer Management System",
@@ -31,7 +49,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0a0a0a",
+  themeColor: "#0a0a12",
 }
 
 export default function RootLayout({
@@ -41,7 +59,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${jakarta.variable} ${dmMono.variable} ${fraunces.variable} font-sans antialiased`}>
         {children}
         <Toaster richColors position="top-center" theme="dark" />
         <ServiceWorkerRegister />
