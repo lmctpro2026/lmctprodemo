@@ -106,6 +106,11 @@ export default function HomePage() {
           transition: opacity 800ms var(--ease), transform 800ms var(--ease);
         }
         .lp-reveal.is-visible { opacity: 1; transform: none; }
+        /* Above-the-fold hero must paint instantly — never gate it on IO. */
+        .lp-hero .lp-reveal { opacity: 1; transform: none; transition: none; }
+        @media (prefers-reduced-motion: reduce) {
+          .lp-reveal { opacity: 1; transform: none; transition: none; }
+        }
 
         /* ─── Nav ────────────────────────────────────────────────────── */
         .lp-nav {
@@ -144,6 +149,12 @@ export default function HomePage() {
         }
         .lp-nav-link:hover { color: var(--ink); }
         .lp-nav-cta { display: flex; align-items: center; gap: 14px; }
+        .lp-nav-cta > .lp-nav-link { display: none; }
+        @media (min-width: 540px) { .lp-nav-cta > .lp-nav-link { display: inline; } }
+        @media (max-width: 540px) {
+          .lp-nav-row { height: 60px; padding: 0 18px; }
+          .lp-btn-primary { padding: 9px 14px; font-size: 13px; }
+        }
 
         .lp-btn-primary {
           background: var(--ink);
@@ -342,6 +353,11 @@ export default function HomePage() {
         }
         .lp-cta-row {
           display: flex; flex-wrap: wrap; align-items: center; gap: 18px;
+        }
+        @media (max-width: 540px) {
+          .lp-cta-row { flex-direction: column; gap: 14px; width: 100%; }
+          .lp-cta-row > a { width: 100%; justify-content: center; }
+          .lp-cta-row .lp-btn-primary { padding: 14px 20px; font-size: 15px; }
         }
         .lp-trust {
           margin: 22px 0 0;
@@ -1416,7 +1432,7 @@ export default function HomePage() {
               <a className="lp-nav-link" href="#pricing">Pricing</a>
             </nav>
             <div className="lp-nav-cta">
-              <Link href="/auth/login" className="lp-nav-link" style={{ display: "inline" }}>Sign in</Link>
+              <Link href="/auth/login" className="lp-nav-link">Sign in</Link>
               <Link href="/demo" className="lp-btn-primary">
                 Book a demo <ArrowRight />
               </Link>
@@ -1444,7 +1460,7 @@ export default function HomePage() {
           <div className="lp-hero-centered-inner">
             {/* Text column — centered */}
             <div className="lp-reveal" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-              {/* Announcement pill (lifted from /v2) */}
+              {/* Announcement pill */}
               <aside className="lp-pill" aria-label="Announcement">
                 <span className="lp-pill-dot" />
                 <span className="lp-pill-body">MAX is here — an AI assistant trained on your stock</span>
