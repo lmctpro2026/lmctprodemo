@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Megaphone,
   FileBarChart,
+  Network,
 } from "lucide-react"
 
 interface NavItem {
@@ -51,6 +52,7 @@ const sections: { label: string; items: NavItem[] }[] = [
       { title: "Reports",       href: "/dashboard/reports",   icon: FileBarChart },
       { title: "Market intel",  href: "/dashboard/intel",     icon: BarChart3 },
       { title: "AI assistant",  href: "/dashboard/assistant", icon: MessageSquare },
+      { title: "Network",       href: "/dashboard/network",   icon: Network },
     ],
   },
 ]
