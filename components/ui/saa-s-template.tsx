@@ -224,55 +224,98 @@ const Hero = React.memo(function Hero() {
           from { opacity: 0; transform: translateY(-10px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        .v2-kicker {
+          font-family: var(--font-dm-mono), ui-monospace, monospace;
+          font-size: 11px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #c8a96e;
+        }
+        .v2-h1 {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 900;
+          font-feature-settings: "ss01";
+          letter-spacing: -0.028em;
+          line-height: 0.98;
+          color: #ffffff;
+        }
+        .v2-h1 em {
+          font-style: italic;
+          font-weight: 400;
+          color: #c8a96e;
+        }
+        .v2-trust {
+          font-family: var(--font-dm-mono), ui-monospace, monospace;
+          font-size: 11px;
+          letter-spacing: 0.04em;
+          color: rgba(255, 255, 255, 0.42);
+        }
+        .v2-btn-primary {
+          background: #f5f0e8;
+          color: #0d1117;
+          font-weight: 600;
+          padding: 14px 22px;
+          border-radius: 999px;
+          display: inline-flex; align-items: center; gap: 8px;
+          font-size: 15px;
+          transition: transform 200ms cubic-bezier(.2,.8,.3,1), box-shadow 200ms cubic-bezier(.2,.8,.3,1);
+        }
+        .v2-btn-primary:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 14px 36px -10px rgba(200, 169, 110, 0.5);
+        }
+        .v2-btn-ghost {
+          color: rgba(255, 255, 255, 0.78);
+          font-weight: 500;
+          padding: 14px 18px;
+          border-radius: 999px;
+          display: inline-flex; align-items: center; gap: 8px;
+          font-size: 15px;
+          background: transparent;
+          transition: color 200ms cubic-bezier(.2,.8,.3,1);
+        }
+        .v2-btn-ghost:hover { color: #ffffff; }
       `}</style>
 
       {/* Announcement pill */}
-      <aside className="mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-700 bg-gray-800/50 backdrop-blur-sm">
+      <aside className="mb-9 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]" />
-        <span className="text-xs text-gray-300">
+        <span className="text-xs text-white/70">
           MAX is here — an AI assistant trained on your stock
         </span>
         <a
           href="#max"
-          className="flex items-center gap-1 text-xs text-white/80 hover:text-white transition-all active:scale-95"
+          className="flex items-center gap-1 text-xs text-white hover:text-[#c8a96e] transition-colors"
           aria-label="Read more about MAX"
         >
           Read more <ArrowRight size={12} />
         </a>
       </aside>
 
-      <h1
-        className="text-4xl md:text-6xl lg:text-7xl font-semibold text-center max-w-4xl px-6 leading-[1.05] mb-6"
-        style={{
-          background: "linear-gradient(to bottom, #ffffff 0%, #ffffff 60%, rgba(255, 255, 255, 0.55) 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          letterSpacing: "-0.04em",
-        }}
-      >
-        Run a tighter yard.<br />Sell with conviction.
+      {/* Editorial kicker */}
+      <p className="v2-kicker mb-6">For Australian LMCT dealers</p>
+
+      {/* Editorial headline — Fraunces 900 with italic gold accent */}
+      <h1 className="v2-h1 text-center max-w-5xl text-[44px] sm:text-6xl lg:text-[80px] mb-7">
+        Run a <em>tighter</em> yard.<br />Sell with conviction.
       </h1>
 
-      <p className="text-base md:text-lg text-center max-w-2xl px-6 mb-10 text-gray-400 leading-relaxed">
+      <p className="text-base md:text-lg text-center max-w-2xl px-6 mb-10 text-white/60 leading-relaxed">
         LMCT PRO is the dealer management platform built for the way Australian car
         traders actually work — auction Monday, recon Tuesday, listings live by Wednesday.
         Stock, sales, compliance and an AI assistant trained on your inventory.
       </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-3 relative z-10 mb-16">
-        <Link href="/demo">
-          <Button type="button" variant="gradient" size="lg" className="rounded-lg">
-            Book a demo
-            <ArrowRight size={16} />
-          </Button>
+      <div className="flex flex-wrap items-center justify-center gap-3 relative z-10 mb-7">
+        <Link href="/demo" className="v2-btn-primary">
+          Book a demo <ArrowRight size={16} />
         </Link>
-        <Link href="/auth/sign-up">
-          <Button type="button" variant="ghost" size="lg" className="rounded-lg">
-            Or start a 14-day trial
-          </Button>
+        <Link href="/auth/sign-up" className="v2-btn-ghost">
+          Or start a 14-day trial
         </Link>
       </div>
+
+      <p className="v2-trust mb-16">30-minute onboarding · No credit card · No lock-in.</p>
 
       {/* Dashboard frame with glow */}
       <div className="w-full max-w-5xl relative pb-20">
