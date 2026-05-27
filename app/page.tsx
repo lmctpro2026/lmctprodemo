@@ -108,8 +108,33 @@ export default function HomePage() {
         .lp-reveal.is-visible { opacity: 1; transform: none; }
         /* Above-the-fold hero must paint instantly — never gate it on IO. */
         .lp-hero .lp-reveal { opacity: 1; transform: none; transition: none; }
+
+        /* ─── Emil pass: tactile press feedback on every CTA ──────────────
+           Scale-on-active gives instant "I heard you" feedback. Subtle (0.97).
+           Applies to anchors styled as buttons too (Next.js <Link> renders <a>). */
+        .lp-btn-primary, .lp-btn-ghost, .lp-btn-cream-on-dark, .lp-btn-green-outline, .lp-pill-link {
+          transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                      box-shadow 200ms var(--ease),
+                      background 200ms var(--ease),
+                      color 200ms var(--ease),
+                      border-color 200ms var(--ease);
+        }
+        .lp-btn-primary:active, .lp-btn-ghost:active, .lp-btn-cream-on-dark:active,
+        .lp-btn-green-outline:active, .lp-pill-link:active {
+          transform: scale(0.97);
+        }
+        /* On touch devices only: skip hover-lift on buttons (false positives on tap). */
+        @media (hover: none) {
+          .lp-btn-primary:hover, .lp-btn-cream-on-dark:hover { transform: none; box-shadow: none; }
+        }
+
+        /* Reduced motion: kill all transform/translate motion. Keep opacity. */
         @media (prefers-reduced-motion: reduce) {
           .lp-reveal { opacity: 1; transform: none; transition: none; }
+          .lp-hero-card, .lp-hero-card-wrap, .lp-card { transform: none !important; }
+          .lp-btn-primary:active, .lp-btn-cream-on-dark:active, .lp-btn-ghost:active,
+          .lp-btn-green-outline:active, .lp-pill-link:active { transform: none; }
+          *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
         }
 
         /* ─── Nav ────────────────────────────────────────────────────── */
@@ -1256,6 +1281,67 @@ export default function HomePage() {
           margin-left: 6px;
         }
 
+        /* ─── FAQ ────────────────────────────────────────────────────── */
+        .lp-faq {
+          background: var(--cream-2);
+          padding: 100px 0 100px;
+          border-top: 1px solid var(--rule);
+        }
+        .lp-faq-inner {
+          max-width: 920px;
+          margin: 0 auto;
+          padding: 0 28px;
+        }
+        .lp-faq-head { text-align: center; margin-bottom: 56px; }
+        .lp-faq-h {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 700;
+          font-size: clamp(34px, 5vw, 50px);
+          line-height: 1.02;
+          letter-spacing: -0.022em;
+          color: var(--ink);
+          margin: 8px 0 0;
+        }
+        .lp-faq-h em { font-style: italic; font-weight: 400; color: var(--gold); }
+        .lp-faq-list { display: flex; flex-direction: column; gap: 0; }
+        .lp-faq-item {
+          border-top: 1px solid var(--rule);
+          padding: 0;
+        }
+        .lp-faq-item:last-child { border-bottom: 1px solid var(--rule); }
+        .lp-faq-item > summary {
+          list-style: none;
+          cursor: pointer;
+          padding: 22px 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 600;
+          font-size: clamp(18px, 1.9vw, 22px);
+          letter-spacing: -0.012em;
+          color: var(--ink);
+          transition: color 200ms var(--ease);
+        }
+        .lp-faq-item > summary::-webkit-details-marker { display: none; }
+        .lp-faq-item > summary:hover { color: var(--gold-2, #8a7034); }
+        .lp-faq-chev {
+          flex-shrink: 0;
+          width: 16px; height: 16px;
+          color: var(--ink-muted);
+          transition: transform 220ms var(--ease), color 200ms var(--ease);
+        }
+        .lp-faq-item[open] .lp-faq-chev { transform: rotate(180deg); color: var(--gold); }
+        .lp-faq-answer {
+          padding: 0 0 24px;
+          max-width: 64ch;
+          font-size: 15.5px;
+          line-height: 1.6;
+          color: var(--ink-muted);
+        }
+        .lp-faq-answer strong { color: var(--ink); font-weight: 600; }
+
         /* ─── PRICING ────────────────────────────────────────────────── */
         .lp-pricing {
           background: var(--cream);
@@ -1427,8 +1513,8 @@ export default function HomePage() {
             </Link>
             <nav className="lp-nav-links" aria-label="Primary">
               <a className="lp-nav-link" href="#platform">Platform</a>
-              <a className="lp-nav-link" href="#bento">Why dealers switch</a>
               <a className="lp-nav-link" href="#max">MAX</a>
+              <a className="lp-nav-link" href="#faq">Q&amp;A</a>
               <a className="lp-nav-link" href="#pricing">Pricing</a>
             </nav>
             <div className="lp-nav-cta">
@@ -1476,10 +1562,9 @@ export default function HomePage() {
               </h1>
 
               <p className="lp-sub" style={{ marginInline: "auto", marginTop: 28 }}>
-                LMCT PRO is the dealer management platform built for the way Australian
-                car traders actually work — auction Monday, recon Tuesday, listings live
-                by Wednesday. Stock, sales, compliance, and an AI assistant trained on
-                your inventory.
+                Stock, sales, compliance and an AI that actually knows your yard. Built
+                around the way the week really goes — auction Monday, recon Tuesday,
+                listings live by Wednesday.
               </p>
 
               <div className="lp-cta-row" style={{ marginTop: 36, justifyContent: "center" }}>
@@ -1566,7 +1651,7 @@ export default function HomePage() {
                 margin: 0,
                 color: "var(--ink)",
               }}>
-                The yard, <em style={{ color: "var(--gold)", fontStyle: "italic", fontWeight: 400 }}>made navigable.</em>
+                Built around the way <em style={{ color: "var(--gold)", fontStyle: "italic", fontWeight: 400 }}>your week actually goes.</em>
               </h2>
             </div>
 
@@ -1664,11 +1749,10 @@ export default function HomePage() {
                 You hire a colleague.<br /><em>Not a chatbot.</em>
               </h2>
               <p className="lp-max-body">
-                MAX answers questions about your business with your data.
-                Specific. In your dealership&rsquo;s tone of voice. Knows what&rsquo;s
-                aged out, what&rsquo;s margin-thin, what a buyer paid last December.
-                Drafts listings, prices aged stock, flags risk. Trained on you, not
-                a million strangers.
+                MAX knows your stock by rego, your buyers by name, and your margin by
+                model. Ask in plain English — &ldquo;what should I reprice this week?&rdquo;,
+                &ldquo;what did the Ranger land at?&rdquo;, &ldquo;who paid cash for a ute last
+                quarter?&rdquo; — and get a real answer, not a chatbot deflection.
               </p>
               <p className="lp-max-fineprint">
                 Built on Claude. Prompt-cached. Tool-using. The clever bits stay behind the demo.
@@ -1727,6 +1811,70 @@ export default function HomePage() {
                 who="Marco D."
                 where="Brunswick"
                 plan="Software + AI"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── FAQ — Moment 5.5: addresses the real dealer objections ─── */}
+        <section id="faq" className="lp-faq">
+          <div className="lp-faq-inner">
+            <div className="lp-faq-head lp-reveal">
+              <p className="lp-eyebrow">Straight answers</p>
+              <h2 className="lp-faq-h">
+                What dealers <em>actually ask.</em>
+              </h2>
+            </div>
+            <div className="lp-faq-list lp-reveal">
+              <FaqItem
+                q="Will my existing stock import?"
+                a={
+                  <>Yes. Drop a CSV from Excel or your current DMS — we&rsquo;ll map the columns
+                  with you on the demo call. <strong>Most yards are live in 30 minutes.</strong>{" "}
+                  If you&rsquo;ve been keeping it on paper, MAX can structure it from photos.</>
+                }
+              />
+              <FaqItem
+                q="What happens if I cancel?"
+                a={
+                  <>Click export. Every vehicle, sale, customer and compliance record
+                  comes out as CSV. <strong>No lock-in clause, no exit fees, no holding
+                  your data hostage.</strong> You keep what&rsquo;s yours, full stop.</>
+                }
+              />
+              <FaqItem
+                q="Do you sell or share my data?"
+                a={
+                  <>Never. Your data sits behind row-level security — only you and your
+                  team see it. <strong>The anonymous aggregates that make MAX sharper are
+                  stripped of any identifying details</strong> before they go anywhere near
+                  the model.</>
+                }
+              />
+              <FaqItem
+                q="Do I need to install anything?"
+                a={
+                  <>Nope. Open lmctpro.com.au in any browser. <strong>On your phone, hit
+                  &ldquo;Add to Home Screen&rdquo; and it behaves like a native app</strong> —
+                  camera, offline, push notifications. No app store waiting room.</>
+                }
+              />
+              <FaqItem
+                q="How long until I&rsquo;m actually selling through it?"
+                a={
+                  <>From demo call to first sale recorded: typically the same week.{" "}
+                  <strong>30 minutes for setup, the rest is muscle memory.</strong> Sam runs
+                  the onboarding personally for the first five dealers each month.</>
+                }
+              />
+              <FaqItem
+                q="What about GST, VP151 and the dealings register?"
+                a={
+                  <>Pre-filled from the sale — buyer, vehicle, dates, price, warranty. Click
+                  print. The dealings register exports quarterly as a single PDF.{" "}
+                  <strong>Designed around VicRoads forms and the ACL,</strong> reviewed by an
+                  Australian compliance lawyer.</>
+                }
               />
             </div>
           </div>
@@ -1806,11 +1954,12 @@ export default function HomePage() {
           <div className="lp-final-inner lp-reveal">
             <p className="lp-eyebrow" style={{ color: "var(--gold)", marginBottom: 22 }}>Start today</p>
             <h2 className="lp-final-h">
-              Fourteen days. <em>No credit card.</em>
+              Stop typing forms. <em>Start moving cars.</em>
             </h2>
             <p className="lp-final-sub">
-              Bring your stock. Book a demo, run a sale through the platform, and decide
-              if LMCT PRO becomes the easiest software your dealership has ever used.
+              Fourteen days, no card, no lock-in. Bring your stock — we&rsquo;ll import it in
+              the demo. Run a sale through the platform. Decide if LMCT PRO becomes the
+              easiest software your dealership has ever used.
             </p>
             <div className="lp-final-cta">
               <Link href="/demo" className="lp-btn-cream-on-dark">
@@ -1858,6 +2007,20 @@ function Check() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M20 6L9 17l-5-5" />
     </svg>
+  )
+}
+
+function FaqItem({ q, a }: { q: string; a: React.ReactNode }) {
+  return (
+    <details className="lp-faq-item">
+      <summary>
+        <span>{q}</span>
+        <svg className="lp-faq-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </summary>
+      <div className="lp-faq-answer">{a}</div>
+    </details>
   )
 }
 
