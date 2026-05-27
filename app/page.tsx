@@ -221,6 +221,86 @@ export default function HomePage() {
           .lp-hero { padding: 56px 0 120px; }
         }
 
+        /* Centered hero layout — text stacked, dashboard mockup full-width below */
+        .lp-hero-centered-inner {
+          position: relative; z-index: 2;
+          max-width: 1240px; margin: 0 auto;
+          padding: 0 28px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 80px;
+        }
+        @media (max-width: 720px) { .lp-hero-centered-inner { gap: 56px; } }
+
+        /* Announcement pill — sits above the kicker on cream */
+        .lp-pill {
+          display: inline-flex; align-items: center; gap: 10px;
+          padding: 7px 14px 7px 12px;
+          border-radius: 999px;
+          background: rgba(13, 17, 23, 0.04);
+          border: 1px solid var(--rule);
+          backdrop-filter: blur(8px);
+          font-size: 13px;
+          color: var(--ink-2);
+          transition: background 200ms cubic-bezier(.2, .8, .3, 1), border-color 200ms cubic-bezier(.2, .8, .3, 1);
+        }
+        .lp-pill:hover { background: rgba(13, 17, 23, 0.06); border-color: var(--rule-2); }
+        .lp-pill-dot {
+          width: 7px; height: 7px; border-radius: 999px;
+          background: var(--money);
+          box-shadow: 0 0 8px var(--money);
+        }
+        .lp-pill-body { white-space: nowrap; }
+        @media (max-width: 540px) {
+          .lp-pill-body { white-space: normal; text-align: left; }
+        }
+        .lp-pill-link {
+          display: inline-flex; align-items: center; gap: 5px;
+          color: var(--ink);
+          font-weight: 600;
+          text-decoration: none;
+          transition: color 200ms cubic-bezier(.2, .8, .3, 1);
+        }
+        .lp-pill-link:hover { color: var(--gold-2); }
+
+        /* Dashboard mockup centered + full width below the text */
+        .lp-hero-stage-centered {
+          position: relative;
+          width: 100%;
+          max-width: 980px;
+          margin: 0 auto;
+        }
+        .lp-hero-glow-centered {
+          position: absolute;
+          inset: -60px -40px -20px -40px;
+          background: radial-gradient(
+            ellipse 70% 60% at 50% 30%,
+            rgba(200, 169, 110, 0.22) 0%,
+            transparent 70%
+          );
+          filter: blur(60px);
+          pointer-events: none;
+          z-index: 0;
+        }
+        .lp-hero-card-wrap {
+          position: relative;
+          z-index: 1;
+          /* Light forward-tilt for depth without sacrificing the centered axis. */
+          transform: perspective(2000px) rotateX(2deg);
+          transform-style: preserve-3d;
+          transition: transform 700ms cubic-bezier(.2, .8, .3, 1);
+        }
+        .lp-hero-card-wrap:hover { transform: perspective(2000px) rotateX(0deg); }
+
+        /* When the hero is centered, override the card's own perspective tilt */
+        .lp-hero-stage-centered .lp-hero-card {
+          transform: none;
+        }
+        .lp-hero-stage-centered .lp-hero-card:hover {
+          transform: none;
+        }
+
         /* Hero ambient blob — soft organic gold splash top-right */
         .lp-hero-blob {
           position: absolute;
@@ -1361,19 +1441,32 @@ export default function HomePage() {
             />
           </svg>
 
-          <div className="lp-hero-inner">
-            <div className="lp-reveal">
-              <p className="lp-eyebrow">For Australian LMCT dealers</p>
-              <h1 className="lp-h1">
+          <div className="lp-hero-centered-inner">
+            {/* Text column — centered */}
+            <div className="lp-reveal" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+              {/* Announcement pill (lifted from /v2) */}
+              <aside className="lp-pill" aria-label="Announcement">
+                <span className="lp-pill-dot" />
+                <span className="lp-pill-body">MAX is here — an AI assistant trained on your stock</span>
+                <a href="#max" className="lp-pill-link" aria-label="Read more about MAX">
+                  Read more <ArrowRight />
+                </a>
+              </aside>
+
+              <p className="lp-eyebrow" style={{ margin: "26px 0 18px" }}>For Australian LMCT dealers</p>
+
+              <h1 className="lp-h1" style={{ maxWidth: "18ch" }}>
                 Run a <em>tighter</em> yard.<br />Sell with conviction.
               </h1>
-              <p className="lp-sub">
+
+              <p className="lp-sub" style={{ marginInline: "auto", marginTop: 28 }}>
                 LMCT PRO is the dealer management platform built for the way Australian
                 car traders actually work — auction Monday, recon Tuesday, listings live
-                by Wednesday. One screen for your stock, your sales, your compliance, and
-                an AI assistant trained on your inventory.
+                by Wednesday. Stock, sales, compliance, and an AI assistant trained on
+                your inventory.
               </p>
-              <div className="lp-cta-row">
+
+              <div className="lp-cta-row" style={{ marginTop: 36, justifyContent: "center" }}>
                 <Link href="/demo" className="lp-btn-primary" style={{ padding: "14px 22px", fontSize: 15 }}>
                   Book a demo <ArrowRight />
                 </Link>
@@ -1381,20 +1474,24 @@ export default function HomePage() {
                   Or start a 14-day trial
                 </Link>
               </div>
-              <p className="lp-trust">30-minute onboarding · No credit card · No lock-in.</p>
+
+              <p className="lp-trust" style={{ marginTop: 22 }}>30-minute onboarding · No credit card · No lock-in.</p>
             </div>
 
-            <div className="lp-hero-stage lp-reveal" aria-hidden="true">
-              <div className="lp-hero-glow" />
-              <HeroCard />
-              <span className="lp-badge" style={{ top: -10, left: -28 }}>
-                <span className="lp-badge-dot" style={{ background: "var(--green-rev)" }} />
-                VP151 auto-filled · 12 sec
-              </span>
-              <span className="lp-badge lp-badge-2" style={{ bottom: 10, right: -36 }}>
-                <span className="lp-badge-dot" style={{ background: "var(--amber)" }} />
-                Camry sold · $4,200 profit
-              </span>
+            {/* Dashboard mockup — centered below, full width */}
+            <div className="lp-hero-stage-centered lp-reveal" aria-hidden="true">
+              <div className="lp-hero-glow-centered" />
+              <div className="lp-hero-card-wrap">
+                <HeroCard />
+                <span className="lp-badge" style={{ top: -14, left: "5%" }}>
+                  <span className="lp-badge-dot" style={{ background: "var(--green-rev)" }} />
+                  VP151 auto-filled · 12 sec
+                </span>
+                <span className="lp-badge lp-badge-2" style={{ bottom: 18, right: "5%" }}>
+                  <span className="lp-badge-dot" style={{ background: "var(--amber)" }} />
+                  Camry sold · $4,200 profit
+                </span>
+              </div>
             </div>
           </div>
         </section>
