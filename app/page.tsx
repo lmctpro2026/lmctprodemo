@@ -1,667 +1,1669 @@
-import Link from "next/link"
-import { HeroShowcase } from "@/components/marketing/hero-showcase"
+"use client"
 
-// ── SVG icons. No emojis, no Lucide. Drawn for this brand. ───────────────
-function Arrow({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12h14" /><path d="M13 5l7 7-7 7" />
-    </svg>
-  )
-}
+import Link from "next/link"
+import { useEffect, useState } from "react"
+
+/* ─────────────────────────────────────────────────────────────────────
+   LMCT PRO — landing page.
+   Single self-contained file. One <style> block. No utility classes,
+   no helper components imported. IntersectionObserver for reveals.
+   Hero 55/45 with ambient gold glow + boundary-breaking badges.
+   Diagonal clip-path transitions between cream + ink sections.
+   Auto-cycling product showcase. Bento grid. Dark MAX moment.
+   Staggered testimonials with ghost quote-mark containers.
+   ───────────────────────────────────────────────────────────────────── */
+
+const TABS = [
+  { key: "stock",  label: "Live stock"      },
+  { key: "add",    label: "Add a vehicle"   },
+  { key: "form",   label: "Compliance form" },
+  { key: "max",    label: "Ask MAX"         },
+] as const
+
+type TabKey = (typeof TABS)[number]["key"]
 
 export default function HomePage() {
+  const [tab, setTab] = useState<TabKey>("stock")
+  const [paused, setPaused] = useState(false)
+
+  // Auto-cycle the showcase. 3 seconds per tab, pauses on user override.
+  useEffect(() => {
+    if (paused) return
+    const id = window.setInterval(() => {
+      setTab((cur) => {
+        const i = TABS.findIndex((t) => t.key === cur)
+        return TABS[(i + 1) % TABS.length].key
+      })
+    }, 3000)
+    return () => window.clearInterval(id)
+  }, [paused])
+
+  // IntersectionObserver — anything with .lp-reveal animates in once visible.
+  useEffect(() => {
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-visible")
+            io.unobserve(e.target)
+          }
+        }
+      },
+      { threshold: 0.14, rootMargin: "0px 0px -60px 0px" }
+    )
+    document.querySelectorAll(".lp-reveal").forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [])
+
+  function pick(k: TabKey) {
+    setPaused(true)
+    setTab(k)
+  }
+
   return (
     <div>
       <style>{`
         :root {
-          --cream: #fdf8f0;
-          --cream-2: #f6efe1;
-          --ink: #0a1628;
-          --ink-2: #1d2a3f;
-          --ink-3: #4a5567;
-          --gold: #d4921a;
-          --gold-2: #b87a12;
-          /* Money green — the hook colour. Used sparingly: dealer dollar figures,
-             MAX online indicator, hero glow, success states. Never dominant. */
-          --money: #10b981;
-          --money-2: #34d399;
-          --rule: rgba(10, 22, 40, 0.10);
-          --rule-2: rgba(10, 22, 40, 0.18);
+          --ink:        #0d1117;
+          --ink-2:      #1d2533;
+          --ink-muted:  #5a6478;
+          --ink-faint:  #9aa3ae;
+          --cream:      #f5f0e8;
+          --cream-2:    #ece4d2;
+          --cream-3:    #ffffff;
+          --gold:       #c8a96e;
+          --gold-soft:  rgba(200, 169, 110, 0.14);
+          --green-rev:  #4ade80;
+          --amber:      #f5a623;
+          --rule:       rgba(13, 17, 23, 0.08);
+          --rule-2:     rgba(13, 17, 23, 0.16);
+          --shadow-sm:  0 2px 12px rgba(13, 17, 23, 0.07);
+          --shadow-md:  0 12px 36px -12px rgba(13, 17, 23, 0.18);
+          --shadow-lg:  0 40px 80px -20px rgba(13, 17, 23, 0.35);
+          --ease:       cubic-bezier(.2, .8, .3, 1);
         }
-        .lmct-root {
+
+        * { box-sizing: border-box; }
+        html, body { background: var(--cream); }
+
+        .lp {
           background: var(--cream);
           color: var(--ink);
           font-family: var(--font-jakarta), -apple-system, system-ui, sans-serif;
           -webkit-font-smoothing: antialiased;
-          font-feature-settings: "ss01", "ss02", "cv01";
+          font-feature-settings: "ss01", "cv01";
+          line-height: 1.5;
         }
-        .serif { font-family: var(--font-fraunces), Georgia, serif; font-feature-settings: "ss01"; }
-        .mono  { font-family: var(--font-dm-mono), ui-monospace, monospace; }
-        .kicker {
-          font-family: var(--font-dm-mono), ui-monospace, monospace;
-          font-size: 11px;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: var(--gold-2);
+        .lp-serif { font-family: var(--font-fraunces), Georgia, serif; }
+        .lp-mono  { font-family: var(--font-dm-mono),  ui-monospace, monospace; }
+
+        /* Reveal-on-scroll */
+        .lp-reveal {
+          opacity: 0;
+          transform: translateY(18px);
+          transition: opacity 800ms var(--ease), transform 800ms var(--ease);
         }
-        .nav-link {
-          font-family: var(--font-jakarta), sans-serif;
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--ink-2);
-          transition: color 200ms cubic-bezier(.2,.8,.3,1);
+        .lp-reveal.is-visible { opacity: 1; transform: none; }
+
+        /* ─── Nav ────────────────────────────────────────────────────── */
+        .lp-nav {
+          position: sticky; top: 0; z-index: 50;
+          background: rgba(245, 240, 232, 0.78);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--rule);
         }
-        .nav-link:hover { color: var(--ink); }
-        .btn-primary {
+        .lp-nav-row {
+          max-width: 1240px; margin: 0 auto;
+          height: 64px; padding: 0 28px;
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .lp-brand {
+          display: inline-flex; align-items: center; gap: 10px;
+          color: var(--ink); text-decoration: none;
+        }
+        .lp-mark {
+          width: 30px; height: 30px;
+          border-radius: 8px;
+          background: var(--ink);
+          display: inline-flex; align-items: center; justify-content: center;
+        }
+        .lp-brand-name {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 700; font-size: 18px; letter-spacing: -0.012em;
+        }
+        .lp-nav-links { display: none; gap: 28px; }
+        @media (min-width: 860px) { .lp-nav-links { display: flex; } }
+        .lp-nav-link {
+          color: var(--ink-muted);
+          font-size: 14px; font-weight: 500;
+          text-decoration: none;
+          transition: color 200ms var(--ease);
+        }
+        .lp-nav-link:hover { color: var(--ink); }
+        .lp-nav-cta { display: flex; align-items: center; gap: 14px; }
+
+        .lp-btn-primary {
           background: var(--ink);
           color: var(--cream);
-          font-weight: 600;
-          padding: 14px 22px;
+          padding: 10px 18px;
           border-radius: 999px;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          transition: transform 200ms cubic-bezier(.2,.8,.3,1), box-shadow 200ms cubic-bezier(.2,.8,.3,1);
-          font-size: 15px;
+          font-weight: 600; font-size: 14px;
+          text-decoration: none;
+          display: inline-flex; align-items: center; gap: 6px;
+          transition: transform 200ms var(--ease), box-shadow 200ms var(--ease);
+          border: 0;
+          cursor: pointer;
         }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgba(10,22,40,0.4); }
-        .btn-ghost {
-          color: var(--ink);
-          font-weight: 600;
-          padding: 14px 20px;
-          border-radius: 999px;
-          border: 1px solid var(--rule-2);
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
+        .lp-btn-primary:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 14px 30px -10px rgba(13, 17, 23, 0.45);
+        }
+        .lp-btn-ghost {
+          color: var(--ink-muted);
+          font-weight: 600; font-size: 14px;
           background: transparent;
-          transition: background 200ms cubic-bezier(.2,.8,.3,1), border-color 200ms cubic-bezier(.2,.8,.3,1);
-          font-size: 15px;
+          padding: 10px 0;
+          text-decoration: none;
+          display: inline-flex; align-items: center; gap: 6px;
         }
-        .btn-ghost:hover { background: var(--cream-2); border-color: var(--ink-2); }
-        .h-display {
-          font-family: var(--font-fraunces), Georgia, serif;
-          font-weight: 700;
-          font-feature-settings: "ss01";
-          letter-spacing: -0.025em;
-          line-height: 0.95;
+        .lp-btn-ghost:hover { color: var(--ink); }
+        .lp-btn-cream-on-dark {
+          background: var(--cream);
           color: var(--ink);
+          padding: 14px 24px;
+          border-radius: 999px;
+          font-weight: 600; font-size: 15px;
+          text-decoration: none;
+          display: inline-flex; align-items: center; gap: 8px;
+          transition: transform 200ms var(--ease);
         }
-        .h-section {
-          font-family: var(--font-fraunces), Georgia, serif;
-          font-weight: 600;
-          letter-spacing: -0.018em;
-          line-height: 1;
-          color: var(--ink);
+        .lp-btn-cream-on-dark:hover { transform: translateY(-1px); }
+        .lp-btn-green-outline {
+          color: var(--green-rev);
+          border: 1px solid rgba(74, 222, 128, 0.45);
+          padding: 14px 24px;
+          border-radius: 999px;
+          font-weight: 600; font-size: 15px;
+          text-decoration: none;
+          background: transparent;
+          display: inline-flex; align-items: center; gap: 8px;
+          transition: background 200ms var(--ease), border-color 200ms var(--ease);
         }
-        .lede { color: var(--ink-3); font-size: 18px; line-height: 1.55; max-width: 60ch; }
-        .panel {
-          background: var(--cream-2);
-          border: 1px solid var(--rule);
-          border-radius: 22px;
+        .lp-btn-green-outline:hover {
+          background: rgba(74, 222, 128, 0.08);
+          border-color: var(--green-rev);
         }
-        /* Hero dashboard mockup — composed in HTML, transformed in 3D */
-        .mockup-stage {
-          perspective: 2000px;
-          perspective-origin: 50% 30%;
+
+        /* ─── HERO ────────────────────────────────────────────────────── */
+        .lp-hero {
+          position: relative;
+          background: var(--cream);
+          background-image: radial-gradient(rgba(13, 17, 23, 0.06) 1px, transparent 1px);
+          background-size: 24px 24px;
+          padding: 80px 0 160px;
+          overflow: hidden;
+          clip-path: polygon(0 0, 100% 0, 100% calc(100% - 70px), 0 100%);
         }
-        .mockup {
-          background: linear-gradient(180deg, #12121e 0%, #0a0a12 100%);
-          border-radius: 18px;
-          border: 1px solid rgba(139, 92, 246, 0.18);
-          box-shadow:
-            0 60px 120px -40px rgba(10, 22, 40, 0.55),
-            0 30px 60px -20px rgba(139, 92, 246, 0.25),
-            inset 0 1px 0 rgba(255, 255, 255, 0.04);
-          transform: rotateX(8deg) rotateY(-14deg) rotateZ(0.5deg);
-          transform-style: preserve-3d;
-          transition: transform 800ms cubic-bezier(.2,.8,.3,1);
+        .lp-hero-inner {
+          position: relative; z-index: 2;
+          max-width: 1240px; margin: 0 auto;
+          padding: 0 28px;
+          display: grid;
+          grid-template-columns: 55fr 45fr;
+          gap: 64px;
+          align-items: center;
         }
-        .mockup:hover { transform: rotateX(4deg) rotateY(-8deg) rotateZ(0.5deg); }
-        .mockup-stat { font-family: var(--font-dm-mono), monospace; }
-        .mockup-row { border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .mockup-row:last-child { border-bottom: 0; }
-        .mockup-dot { width: 6px; height: 6px; border-radius: 999px; }
-        .lift {
-          transition: transform 280ms cubic-bezier(.2,.8,.3,1), box-shadow 280ms cubic-bezier(.2,.8,.3,1);
+        @media (max-width: 960px) {
+          .lp-hero-inner { grid-template-columns: 1fr; gap: 56px; }
+          .lp-hero { padding: 56px 0 120px; }
         }
-        .lift:hover { transform: translateY(-3px); box-shadow: 0 24px 50px -28px rgba(10,22,40,0.4); }
-        .gold-rule { background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent); height: 1px; }
-        .ticker-item { border-left: 1px solid var(--rule); }
-        .price-card { background: var(--cream); border: 1px solid var(--rule-2); border-radius: 22px; }
-        .price-card.featured { background: var(--ink); color: var(--cream); border-color: var(--ink); }
-        .pill {
-          font-family: var(--font-dm-mono), monospace;
-          font-size: 10px;
+
+        /* Hero ambient blob — soft organic gold splash top-right */
+        .lp-hero-blob {
+          position: absolute;
+          top: -200px; right: -180px;
+          width: 720px; height: 720px;
+          pointer-events: none;
+          opacity: 0.65;
+          z-index: 1;
+        }
+
+        .lp-eyebrow {
+          font-family: var(--font-dm-mono), ui-monospace, monospace;
+          font-size: 11px;
           letter-spacing: 0.16em;
           text-transform: uppercase;
-          padding: 4px 10px;
-          border-radius: 999px;
-          background: rgba(212, 146, 26, 0.12);
-          color: var(--gold-2);
-          border: 1px solid rgba(212, 146, 26, 0.25);
+          color: var(--gold);
+          margin: 0 0 22px;
         }
-        .footnote { color: var(--ink-3); font-size: 13px; }
-        @keyframes blink-soft { 0%, 100% { opacity: 1 } 50% { opacity: 0.5 } }
-        .blink { animation: blink-soft 2.4s ease-in-out infinite; }
+        .lp-h1 {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 900;
+          font-size: clamp(44px, 7vw, 72px);
+          line-height: 1.0;
+          letter-spacing: -0.028em;
+          color: var(--ink);
+          margin: 0;
+        }
+        .lp-h1 em {
+          font-style: italic;
+          font-weight: 400;
+          color: var(--gold);
+        }
+        .lp-sub {
+          margin: 24px 0 36px;
+          font-size: 17px;
+          line-height: 1.55;
+          color: var(--ink-muted);
+          max-width: 50ch;
+        }
+        .lp-cta-row {
+          display: flex; flex-wrap: wrap; align-items: center; gap: 18px;
+        }
+        .lp-trust {
+          margin: 22px 0 0;
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px;
+          letter-spacing: 0.05em;
+          color: var(--ink-faint);
+        }
 
-        /* Money-coloured hero glow — sits behind the headline, subtle. */
-        .hero-glow::before {
-          content: "";
+        /* Hero right — the dashboard card moment */
+        .lp-hero-stage {
+          position: relative;
+          height: 460px;
+        }
+        @media (max-width: 960px) { .lp-hero-stage { height: 420px; } }
+        .lp-hero-glow {
           position: absolute;
-          top: -60px; right: -120px; width: 540px; height: 540px;
-          background: radial-gradient(closest-side, rgba(16, 185, 129, 0.18), transparent 70%);
-          pointer-events: none;
+          top: 50%; left: 50%;
+          width: 540px; height: 360px;
+          transform: translate(-50%, -45%);
+          background: radial-gradient(ellipse, rgba(200, 169, 110, 0.32) 0%, transparent 70%);
+          filter: blur(60px);
           z-index: 0;
+          pointer-events: none;
+        }
+        .lp-hero-card {
+          position: relative; z-index: 2;
+          background: var(--ink);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 14px;
+          box-shadow: var(--shadow-lg);
+          transform: perspective(1200px) rotateY(-8deg) rotateX(4deg);
+          transform-style: preserve-3d;
+          overflow: hidden;
+          width: 100%;
+          transition: transform 700ms var(--ease);
+        }
+        .lp-hero-card:hover { transform: perspective(1200px) rotateY(-4deg) rotateX(2deg); }
+
+        /* Card chrome */
+        .lp-hero-chrome {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 12px 14px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .lp-hero-dots { display: flex; gap: 5px; }
+        .lp-hero-dots span {
+          width: 7px; height: 7px; border-radius: 999px;
+          background: rgba(255, 255, 255, 0.14);
+        }
+        .lp-hero-url {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.4);
+          letter-spacing: 0.06em;
+        }
+        .lp-hero-max {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          color: var(--green-rev);
+          letter-spacing: 0.12em;
+          display: inline-flex; align-items: center; gap: 5px;
+        }
+        .lp-pulse {
+          width: 5px; height: 5px; border-radius: 999px;
+          background: var(--green-rev);
+          box-shadow: 0 0 8px var(--green-rev);
+          animation: lp-pulse 2s ease-in-out infinite;
+        }
+        @keyframes lp-pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }
+
+        /* Card body — stock table */
+        .lp-hero-body { padding: 18px; }
+        .lp-hero-tile {
+          display: grid; grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+          margin-bottom: 14px;
+        }
+        .lp-tile {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.04);
+          border-radius: 8px;
+          padding: 10px;
+        }
+        .lp-tile-label {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 8px;
+          color: rgba(255, 255, 255, 0.4);
+          letter-spacing: 0.1em;
+        }
+        .lp-tile-val {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 15px;
+          font-weight: 500;
+          color: #f1f0ff;
+          margin-top: 4px;
+          line-height: 1;
+        }
+        .lp-tile-val.is-money { color: var(--green-rev); }
+
+        .lp-hero-table {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.04);
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .lp-hero-row {
+          display: flex; align-items: center; gap: 10px;
+          padding: 8px 12px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .lp-hero-row:last-child { border-bottom: 0; }
+        .lp-hero-rego {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.4);
+          width: 56px;
+        }
+        .lp-hero-car {
+          font-size: 12px;
+          color: #f1f0ff;
+          flex: 1;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .lp-hero-days {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px;
+          width: 30px;
+          text-align: right;
+        }
+        .lp-hero-price {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 12px;
+          color: #f1f0ff;
+          font-weight: 500;
+          width: 64px;
+          text-align: right;
+        }
+        .lp-c-green  { color: var(--green-rev); }
+        .lp-c-amber  { color: #fbbf24; }
+        .lp-c-red    { color: #fca5a5; }
+
+        /* Floating badges — break the card boundary */
+        .lp-badge {
+          position: absolute;
+          z-index: 3;
+          background: rgba(245, 240, 232, 0.92);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.6);
+          border-radius: 999px;
+          padding: 8px 14px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--ink);
+          display: inline-flex; align-items: center; gap: 8px;
+          box-shadow: var(--shadow-md);
+          transform: rotate(-2deg);
+        }
+        .lp-badge-2 { transform: rotate(3deg); }
+        .lp-badge-dot {
+          width: 7px; height: 7px; border-radius: 999px;
         }
 
-        /* ─── HeroShowcase (Slack-style centered cycling tabs) ────────── */
-        .ls-section {
-          background: linear-gradient(180deg, var(--cream) 0%, var(--cream-2) 100%);
-          padding: 28px 0 80px;
+        /* ─── DARK FLIP — Section: The platform on stage ──────────────── */
+        .lp-stage {
+          position: relative;
+          background: var(--ink);
+          padding: 96px 0 96px;
+          margin-top: -70px;
+          color: #f1f0ff;
+          overflow: hidden;
         }
-        .ls-section-head {
-          max-width: 720px;
-          margin: 0 auto 32px;
+        .lp-stage-bg {
+          position: absolute; inset: 0;
+          background-image:
+            radial-gradient(ellipse 90% 60% at 50% 0%, rgba(200, 169, 110, 0.10) 0%, transparent 60%),
+            radial-gradient(circle at 12% 30%, rgba(74, 222, 128, 0.04), transparent 45%);
+          pointer-events: none;
+        }
+        .lp-stage-inner {
+          position: relative;
+          max-width: 920px; margin: 0 auto;
           padding: 0 28px;
           text-align: center;
         }
-        .ls-showcase { max-width: 940px; margin: 0 auto; padding: 0 20px; }
-        .ls-frame {
-          background: linear-gradient(180deg, #12121e 0%, #0a0a12 100%);
-          border-radius: 22px;
-          border: 1px solid rgba(139, 92, 246, 0.18);
-          box-shadow:
-            0 60px 120px -40px rgba(10, 22, 40, 0.50),
-            0 30px 60px -20px rgba(139, 92, 246, 0.18),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
-          overflow: hidden;
-        }
-        .ls-chrome {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.05);
-          background: rgba(255,255,255,0.02);
-        }
-        .ls-dots { display: flex; gap: 6px; }
-        .ls-dots span { width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.16); }
-        .ls-url {
+        .lp-stage-eyebrow {
           font-family: var(--font-dm-mono), monospace;
-          font-size: 11px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em;
+          font-size: 11px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--gold);
+          margin: 0 0 16px;
         }
-        .ls-max {
-          font-family: var(--font-dm-mono), monospace;
-          font-size: 11px; color: var(--money-2); letter-spacing: 0.12em;
-          display: inline-flex; align-items: center; gap: 6px;
+        .lp-h2 {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 700;
+          font-size: clamp(32px, 4.5vw, 46px);
+          line-height: 1.02;
+          letter-spacing: -0.022em;
+          color: #f1f0ff;
+          margin: 0;
         }
-        .ls-pulse {
-          width: 6px; height: 6px; border-radius: 999px;
-          background: var(--money); box-shadow: 0 0 8px var(--money);
-          animation: ls-blink 2s ease-in-out infinite;
+        .lp-h2 em {
+          font-style: italic;
+          font-weight: 400;
+          color: var(--gold);
         }
-        @keyframes ls-blink { 0%,100% { opacity: 1 } 50% { opacity: 0.45 } }
+        .lp-stage-sub {
+          margin: 18px auto 0;
+          max-width: 56ch;
+          font-size: 16px;
+          color: rgba(241, 240, 255, 0.65);
+        }
 
-        .ls-stage { position: relative; min-height: 460px; padding: 24px; }
-        .ls-panel {
-          position: absolute; inset: 24px;
-          opacity: 0;
-          transition: opacity 380ms cubic-bezier(.2,.8,.3,1);
-          pointer-events: none;
-        }
-        .ls-stage[data-active="stock"] .ls-panel[data-key="stock"],
-        .ls-stage[data-active="add"]   .ls-panel[data-key="add"],
-        .ls-stage[data-active="form"]  .ls-panel[data-key="form"],
-        .ls-stage[data-active="max"]   .ls-panel[data-key="max"]   { opacity: 1; pointer-events: auto; }
-
-        .ls-tabs {
+        /* Tab pills */
+        .lp-tabs {
           display: flex; flex-wrap: wrap; justify-content: center;
-          gap: 8px; margin-top: 26px;
+          gap: 10px;
+          margin: 36px 0 28px;
         }
-        .ls-tab {
-          font-family: var(--font-jakarta), sans-serif;
+        .lp-tab {
+          background: rgba(255, 255, 255, 0.05);
+          color: rgba(255, 255, 255, 0.7);
+          padding: 9px 16px;
+          border-radius: 999px;
           font-size: 13px; font-weight: 500;
-          padding: 9px 16px; border-radius: 999px;
-          background: var(--cream);
-          border: 1px solid var(--rule-2);
-          color: var(--ink-2);
+          font-family: var(--font-jakarta), sans-serif;
+          border: 1px solid transparent;
           cursor: pointer;
           display: inline-flex; align-items: center; gap: 8px;
-          transition: all 200ms cubic-bezier(.2,.8,.3,1);
+          transition: all 220ms var(--ease);
         }
-        .ls-tab:hover { border-color: var(--ink); transform: translateY(-1px); }
-        .ls-tab.is-active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
-        .ls-tab-dot {
-          width: 6px; height: 6px; border-radius: 999px;
-          background: currentColor; opacity: 0.45;
-          transition: background 200ms, box-shadow 200ms, opacity 200ms;
+        .lp-tab:hover { color: #f1f0ff; }
+        .lp-tab.is-active {
+          background: rgba(200, 169, 110, 0.15);
+          border-color: rgba(200, 169, 110, 0.45);
+          color: var(--gold);
         }
-        .ls-tab.is-active .ls-tab-dot { background: var(--money-2); opacity: 1; box-shadow: 0 0 8px var(--money); }
+        .lp-tab-dot {
+          width: 5px; height: 5px; border-radius: 999px;
+          background: currentColor;
+          opacity: 0.5;
+        }
+        .lp-tab.is-active .lp-tab-dot {
+          background: var(--green-rev);
+          opacity: 1;
+          box-shadow: 0 0 8px var(--green-rev);
+        }
 
-        .ls-mono   { font-family: var(--font-dm-mono), monospace; }
-        .ls-muted  { color: rgba(255,255,255,0.4); }
-        .ls-money  { color: var(--money-2); }
-        .ls-warn   { color: #fbbf24; }
-        .ls-danger { color: #fca5a5; }
-        .ls-violet { color: #a78bfa; }
-
-        /* Stock panel */
-        .ls-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
-        .ls-kpi {
-          background: rgba(255,255,255,0.025);
-          border: 1px solid rgba(255,255,255,0.05);
-          border-radius: 8px; padding: 10px 12px;
-          display: flex; flex-direction: column; gap: 6px;
+        /* Stage screenshot */
+        .lp-stage-screen {
+          position: relative;
+          min-height: 380px;
+          margin: 0 auto;
+          max-width: 880px;
+          background: linear-gradient(180deg, #161a23 0%, #0d1117 100%);
+          border-radius: 14px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          box-shadow: var(--shadow-lg);
+          overflow: hidden;
         }
-        .ls-kpi-label { font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; }
-        .ls-kpi-value { font-size: 18px; font-weight: 500; color: #f1f0ff; line-height: 1; }
-        .ls-kpi-value.is-money { color: var(--money-2); }
-        .ls-rows {
-          background: rgba(255,255,255,0.02);
-          border: 1px solid rgba(255,255,255,0.05);
-          border-radius: 10px; overflow: hidden;
+        .lp-stage-screen-pad { padding: 28px; min-height: 380px; }
+        .lp-stage-pane {
+          position: absolute; inset: 28px;
+          opacity: 0; transition: opacity 360ms var(--ease);
+          pointer-events: none;
         }
-        .ls-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
-        .ls-row:last-child { border-bottom: 0; }
-        .ls-row-stock { font-size: 11px; color: rgba(255,255,255,0.4); width: 56px; }
-        .ls-row-car   { font-size: 13px; color: #f1f0ff; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ls-row-body  { font-size: 11px; color: rgba(255,255,255,0.4); width: 50px; }
-        .ls-row-days  { font-size: 12px; width: 36px; text-align: right; }
-        .ls-row-price { font-size: 13px; font-weight: 500; color: #f1f0ff; width: 80px; text-align: right; }
+        .lp-stage-pane.is-active { opacity: 1; pointer-events: auto; }
 
-        /* Add Vehicle panel — animated fields */
-        .ls-add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .ls-field {
-          background: rgba(255,255,255,0.025);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 8px; padding: 10px 12px;
+        /* Pane: stock */
+        .lp-stock-kpis {
+          display: grid; grid-template-columns: repeat(4, 1fr);
+          gap: 10px; margin-bottom: 18px;
+        }
+        .lp-stock-rows {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .lp-stock-row {
+          display: flex; align-items: center; gap: 12px;
+          padding: 10px 14px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .lp-stock-row:last-child { border-bottom: 0; }
+        .lp-stock-row-stock {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.4);
+          width: 56px;
+        }
+        .lp-stock-row-car {
+          font-size: 13px;
+          color: #f1f0ff;
+          flex: 1;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+          text-align: left;
+        }
+        .lp-stock-row-body, .lp-stock-row-days, .lp-stock-row-price {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 12px;
+        }
+        .lp-stock-row-body { width: 48px; color: rgba(255, 255, 255, 0.4); }
+        .lp-stock-row-days { width: 36px; text-align: right; }
+        .lp-stock-row-price { width: 80px; text-align: right; color: #f1f0ff; font-weight: 500; }
+
+        /* Pane: add vehicle */
+        .lp-add-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        .lp-add-field {
+          background: rgba(255, 255, 255, 0.025);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 8px;
+          padding: 10px 12px;
           opacity: 0; transform: translateY(8px);
+          text-align: left;
         }
-        .ls-stage[data-active="add"] .ls-field {
-          animation: ls-field-in 0.5s cubic-bezier(.2,.8,.3,1) forwards;
+        .lp-stage-pane.is-active.lp-pane-add .lp-add-field {
+          animation: lp-fade-up 0.5s var(--ease) forwards;
         }
-        @keyframes ls-field-in { to { opacity: 1; transform: none; } }
-        .ls-field-label { display: block; font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; margin-bottom: 4px; text-transform: uppercase; }
-        .ls-field-value { display: block; font-size: 13px; color: #f1f0ff; font-weight: 500; }
-        .ls-add-done {
-          margin-top: 16px;
+        @keyframes lp-fade-up { to { opacity: 1; transform: none; } }
+        .lp-add-label {
+          display: block;
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 9px;
+          color: rgba(255, 255, 255, 0.4);
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          margin-bottom: 4px;
+        }
+        .lp-add-val {
+          display: block;
+          font-size: 13px;
+          color: #f1f0ff;
+          font-weight: 500;
+        }
+        .lp-add-done {
+          margin-top: 14px;
           display: inline-flex; align-items: center; gap: 10px;
           padding: 10px 14px;
-          background: rgba(16,185,129,0.10);
-          border: 1px solid rgba(16,185,129,0.25);
+          background: rgba(74, 222, 128, 0.10);
+          border: 1px solid rgba(74, 222, 128, 0.30);
           border-radius: 10px;
-          color: var(--money-2);
-          font-size: 13px;
-          font-family: var(--font-jakarta), sans-serif;
+          color: var(--green-rev);
+          font-size: 13px; font-weight: 500;
           opacity: 0;
         }
-        .ls-stage[data-active="add"] .ls-add-done {
-          animation: ls-fade-in 0.6s cubic-bezier(.2,.8,.3,1) 3.6s forwards;
+        .lp-stage-pane.is-active.lp-pane-add .lp-add-done {
+          animation: lp-fade-up 0.6s var(--ease) 3.4s forwards;
         }
-        @keyframes ls-fade-in { to { opacity: 1; } }
 
-        /* Compliance form panel */
-        .ls-form-head { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
-        .ls-form-kicker { font-size: 10px; color: var(--gold); letter-spacing: 0.18em; text-transform: uppercase; }
-        .ls-form-title { font-family: var(--font-fraunces), Georgia, serif; font-size: 20px; font-weight: 700; color: #f1f0ff; }
-        .ls-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .ls-formrow {
-          display: flex; flex-direction: column; gap: 4px;
+        /* Pane: compliance */
+        .lp-form-head {
+          display: flex; flex-direction: column; gap: 6px;
+          margin-bottom: 18px; text-align: left;
+        }
+        .lp-form-kicker {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+          color: var(--gold);
+        }
+        .lp-form-title {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-size: 22px; font-weight: 700; color: #f1f0ff;
+        }
+        .lp-form-meta {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px; color: rgba(255, 255, 255, 0.4);
+        }
+        .lp-form-grid {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+          text-align: left;
+        }
+        .lp-formrow {
           opacity: 0; transform: translateY(6px);
         }
-        .ls-stage[data-active="form"] .ls-formrow {
-          animation: ls-field-in 0.5s cubic-bezier(.2,.8,.3,1) forwards;
+        .lp-stage-pane.is-active.lp-pane-form .lp-formrow {
+          animation: lp-fade-up 0.5s var(--ease) forwards;
         }
-        .ls-form-key { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.12em; text-transform: uppercase; }
-        .ls-form-val { font-size: 14px; color: #f1f0ff; font-weight: 500; }
-        .ls-form-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; }
-        .ls-docpill {
+        .lp-form-k {
+          display: block;
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.4);
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          margin-bottom: 3px;
+        }
+        .lp-form-v {
+          display: block;
+          font-size: 14px; color: #f1f0ff; font-weight: 500;
+        }
+        .lp-form-docs {
+          margin-top: 18px;
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+        }
+        .lp-form-docpill {
           text-align: center;
           padding: 10px;
           border-radius: 8px;
-          background: rgba(212, 146, 26, 0.12);
-          border: 1px solid rgba(212, 146, 26, 0.25);
-          color: #fbbf24;
+          background: rgba(200, 169, 110, 0.12);
+          border: 1px solid rgba(200, 169, 110, 0.30);
+          color: var(--gold);
           font-family: var(--font-dm-mono), monospace;
           font-size: 11px;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.06em;
           opacity: 0; transform: translateY(8px);
         }
-        .ls-stage[data-active="form"] .ls-docpill {
-          animation: ls-field-in 0.4s cubic-bezier(.2,.8,.3,1) forwards;
+        .lp-stage-pane.is-active.lp-pane-form .lp-form-docpill {
+          animation: lp-fade-up 0.45s var(--ease) forwards;
         }
 
-        /* MAX panel */
-        .ls-chat { display: flex; flex-direction: column; gap: 10px; }
-        .ls-bubble {
-          max-width: 80%;
+        /* Pane: MAX */
+        .lp-chat {
+          display: flex; flex-direction: column; gap: 10px;
+          text-align: left;
+        }
+        .lp-bubble {
+          max-width: 78%;
           padding: 10px 14px;
           border-radius: 16px;
           font-size: 13px; line-height: 1.5;
           color: #f1f0ff;
           opacity: 0; transform: translateY(8px);
         }
-        .ls-stage[data-active="max"] .ls-bubble {
-          animation: ls-field-in 0.45s cubic-bezier(.2,.8,.3,1) forwards;
+        .lp-stage-pane.is-active.lp-pane-max .lp-bubble {
+          animation: lp-fade-up 0.45s var(--ease) forwards;
         }
-        .ls-user {
-          align-self: flex-end; border-bottom-right-radius: 4px;
-          background: rgba(139, 92, 246, 0.18);
-          border: 1px solid rgba(139, 92, 246, 0.25);
+        .lp-bubble-user {
+          align-self: flex-end;
+          background: rgba(200, 169, 110, 0.16);
+          border: 1px solid rgba(200, 169, 110, 0.30);
+          border-bottom-right-radius: 4px;
         }
-        .ls-bubble.ls-max {
-          align-self: flex-start; border-bottom-left-radius: 4px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.06);
-          color: #f1f0ff;
-        }
-        .ls-bubble.is-muted { color: rgba(241,240,255,0.78); }
-        .ls-typing {
+        .lp-bubble-max {
           align-self: flex-start;
-          display: inline-flex; gap: 3px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-bottom-left-radius: 4px;
+        }
+        .lp-bubble-max.is-muted { color: rgba(241, 240, 255, 0.78); }
+        .lp-bubble-max .lp-c-gold { color: var(--gold); }
+        .lp-bubble-max .lp-c-green-bold { color: var(--green-rev); font-weight: 600; }
+        .lp-typing {
+          align-self: flex-start;
           padding: 12px 14px;
-          background: rgba(255,255,255,0.04);
+          background: rgba(255, 255, 255, 0.04);
           border-radius: 16px; border-bottom-left-radius: 4px;
-          opacity: 0; width: max-content;
+          display: inline-flex; gap: 4px;
+          opacity: 0;
         }
-        .ls-stage[data-active="max"] .ls-typing {
-          animation: ls-fade-in 0.4s cubic-bezier(.2,.8,.3,1) forwards;
+        .lp-stage-pane.is-active.lp-pane-max .lp-typing {
+          animation: lp-fade-up 0.4s var(--ease) 1.0s forwards;
         }
-        .ls-typing span {
+        .lp-typing span {
           width: 5px; height: 5px; border-radius: 999px;
-          background: rgba(255,255,255,0.45);
-          animation: ls-bounce 1s ease-in-out infinite;
+          background: rgba(255, 255, 255, 0.5);
+          animation: lp-bounce 1s ease-in-out infinite;
         }
-        .ls-typing span:nth-child(2) { animation-delay: 0.15s; }
-        .ls-typing span:nth-child(3) { animation-delay: 0.30s; }
-        @keyframes ls-bounce { 0%,100% { transform: translateY(0); opacity: 0.45; } 50% { transform: translateY(-3px); opacity: 1; } }
-        .ls-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-        .ls-tool {
+        .lp-typing span:nth-child(2) { animation-delay: 0.15s; }
+        .lp-typing span:nth-child(3) { animation-delay: 0.30s; }
+        @keyframes lp-bounce {
+          0%, 100% { transform: translateY(0); opacity: 0.5; }
+          50% { transform: translateY(-3px); opacity: 1; }
+        }
+        .lp-tools {
+          margin-top: 14px;
+          display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .lp-tool {
           font-family: var(--font-dm-mono), monospace;
           font-size: 10px;
           padding: 4px 10px;
           border-radius: 999px;
-          background: rgba(139,92,246,0.10);
-          color: #c4b5fd;
-          border: 1px solid rgba(139,92,246,0.20);
+          background: rgba(200, 169, 110, 0.10);
+          color: var(--gold);
+          border: 1px solid rgba(200, 169, 110, 0.20);
           letter-spacing: 0.04em;
         }
 
-        @media (max-width: 720px) {
-          .ls-stage   { min-height: 520px; padding: 16px; }
-          .ls-panel   { inset: 16px; }
-          .ls-kpis    { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-          .ls-add-grid,
-          .ls-form-grid { grid-template-columns: 1fr; }
+        /* ─── BENTO — Four pillars ───────────────────────────────────── */
+        .lp-bento {
+          position: relative;
+          background: var(--cream);
+          padding: 140px 0 120px;
+          margin-top: -70px;
+          clip-path: polygon(0 70px, 100% 0, 100% 100%, 0 100%);
         }
+        .lp-bento-inner {
+          max-width: 1240px; margin: 0 auto;
+          padding: 0 28px;
+        }
+        .lp-bento-head {
+          max-width: 720px;
+          margin: 0 0 56px;
+        }
+        .lp-bento-grid {
+          display: grid;
+          grid-template-columns: 65fr 35fr;
+          grid-auto-rows: minmax(320px, auto);
+          gap: 20px;
+        }
+        @media (max-width: 860px) {
+          .lp-bento-grid { grid-template-columns: 1fr; grid-auto-rows: minmax(260px, auto); }
+        }
+        .lp-bento-grid > *:nth-child(3) { grid-column: 1; }
+        .lp-bento-grid > *:nth-child(4) { grid-column: 2; }
+        @media (max-width: 860px) {
+          .lp-bento-grid > *:nth-child(3),
+          .lp-bento-grid > *:nth-child(4) { grid-column: 1; }
+        }
+        /* Swap row 2: narrow then wide */
+        @media (min-width: 861px) {
+          .lp-bento-grid > *:nth-child(3) { grid-column: 1; }
+          .lp-bento-grid > *:nth-child(4) { grid-column: 2; }
+        }
+
+        .lp-card {
+          position: relative;
+          background: var(--cream-3);
+          border-radius: 18px;
+          box-shadow: var(--shadow-sm);
+          overflow: hidden;
+          padding: 32px;
+          display: flex; flex-direction: column;
+          transition: transform 360ms var(--ease), box-shadow 360ms var(--ease);
+        }
+        .lp-card:hover {
+          transform: translateY(-3px);
+          box-shadow: var(--shadow-md);
+        }
+        .lp-card-kicker {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--gold);
+          margin: 0 0 10px;
+        }
+        .lp-card-title {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 700;
+          font-size: 28px;
+          line-height: 1.08;
+          letter-spacing: -0.018em;
+          color: var(--ink);
+          margin: 0 0 12px;
+        }
+        .lp-card-body {
+          font-size: 15px;
+          color: var(--ink-muted);
+          line-height: 1.55;
+          margin: 0;
+          max-width: 42ch;
+        }
+
+        /* Card variants */
+        .lp-card-vp151 {
+          position: absolute;
+          bottom: -10px; right: -40px;
+          width: 70%;
+          background: var(--cream);
+          border: 1px solid var(--rule-2);
+          border-radius: 12px;
+          padding: 16px;
+          transform: rotate(2deg);
+          box-shadow: var(--shadow-md);
+        }
+        .lp-vp151-kicker {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 9px; letter-spacing: 0.14em;
+          color: var(--gold);
+          text-transform: uppercase;
+          margin: 0 0 6px;
+        }
+        .lp-vp151-title {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-size: 14px; font-weight: 700; color: var(--ink);
+          margin: 0 0 12px;
+        }
+        .lp-vp151-row {
+          display: flex; justify-content: space-between;
+          font-size: 11px; padding: 4px 0;
+          border-bottom: 1px solid var(--rule);
+        }
+        .lp-vp151-row span:first-child {
+          font-family: var(--font-dm-mono), monospace;
+          color: var(--ink-faint);
+          letter-spacing: 0.08em;
+          font-size: 9px;
+          text-transform: uppercase;
+        }
+        .lp-vp151-row span:last-child {
+          color: var(--ink); font-weight: 500;
+        }
+
+        .lp-stat-num {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 900;
+          font-size: clamp(72px, 9vw, 96px);
+          line-height: 0.85;
+          letter-spacing: -0.035em;
+          color: var(--ink);
+          margin: 22px 0 6px;
+        }
+        .lp-stat-unit { color: var(--gold); font-style: italic; font-weight: 400; }
+        .lp-stat-sub {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px; letter-spacing: 0.1em;
+          color: var(--ink-faint);
+          text-transform: uppercase;
+        }
+        .lp-stat-bg {
+          position: absolute;
+          inset: 0;
+          opacity: 0.06;
+          pointer-events: none;
+        }
+
+        /* Phone mockup (mobile-first card) */
+        .lp-phone-wrap {
+          position: absolute;
+          right: -40px; bottom: -10px;
+          width: 200px; height: 360px;
+          transform: perspective(900px) rotateY(-22deg) rotateX(6deg) rotate(2deg);
+          transform-style: preserve-3d;
+        }
+        .lp-phone {
+          width: 100%; height: 100%;
+          background: var(--ink);
+          border-radius: 28px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          padding: 12px 10px;
+          box-shadow: 0 30px 60px -20px rgba(13, 17, 23, 0.45);
+        }
+        .lp-phone-screen {
+          background: linear-gradient(180deg, #161a23 0%, #0d1117 100%);
+          border-radius: 22px;
+          height: 100%;
+          padding: 18px 14px;
+          color: #f1f0ff;
+          display: flex; flex-direction: column;
+        }
+        .lp-phone-kicker {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 9px;
+          letter-spacing: 0.16em;
+          color: rgba(255, 255, 255, 0.4);
+          text-transform: uppercase;
+        }
+        .lp-phone-rego {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 28px;
+          color: var(--gold);
+          letter-spacing: 0.05em;
+          margin: 16px 0 4px;
+          font-weight: 500;
+        }
+        .lp-phone-meta {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.78);
+          line-height: 1.4;
+        }
+        .lp-phone-actions {
+          margin-top: auto;
+          padding-top: 14px;
+          display: grid; gap: 6px;
+        }
+        .lp-phone-btn {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          letter-spacing: 0.08em;
+          background: rgba(200, 169, 110, 0.16);
+          color: var(--gold);
+          padding: 7px 0;
+          border-radius: 999px;
+          text-align: center;
+          border: 1px solid rgba(200, 169, 110, 0.3);
+        }
+
+        /* Mini MAX card */
+        .lp-mini-chat { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+        .lp-mini-bubble {
+          padding: 9px 12px;
+          border-radius: 14px;
+          font-size: 12px;
+          line-height: 1.5;
+          max-width: 88%;
+        }
+        .lp-mini-bubble.is-user {
+          align-self: flex-end;
+          background: var(--ink);
+          color: var(--cream);
+          border-bottom-right-radius: 3px;
+        }
+        .lp-mini-bubble.is-max {
+          align-self: flex-start;
+          background: var(--cream-2);
+          color: var(--ink);
+          border-bottom-left-radius: 3px;
+        }
+        .lp-mini-bubble .lp-c-green-bold { color: #047857; font-weight: 700; }
+
+        /* ─── MAX SECTION (dark again) ───────────────────────────────── */
+        .lp-max {
+          position: relative;
+          background: var(--ink);
+          padding: 140px 0 120px;
+          margin-top: -70px;
+          color: #f1f0ff;
+          clip-path: polygon(0 0, 100% 70px, 100% 100%, 0 100%);
+          overflow: hidden;
+        }
+        .lp-max-bg {
+          position: absolute; inset: 0;
+          background-image:
+            radial-gradient(ellipse 80% 50% at 30% 0%, rgba(74, 222, 128, 0.10) 0%, transparent 60%),
+            radial-gradient(circle at 95% 90%, rgba(200, 169, 110, 0.10), transparent 50%);
+          pointer-events: none;
+        }
+        .lp-max-inner {
+          position: relative;
+          max-width: 1240px; margin: 0 auto;
+          padding: 0 28px;
+          display: grid;
+          grid-template-columns: 5fr 6fr;
+          gap: 64px;
+          align-items: center;
+        }
+        @media (max-width: 960px) { .lp-max-inner { grid-template-columns: 1fr; gap: 48px; } }
+        .lp-max-eyebrow {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+          color: var(--gold);
+          margin: 0 0 16px;
+        }
+        .lp-max-h2 {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 700;
+          font-size: clamp(40px, 5.4vw, 56px);
+          line-height: 1.02;
+          letter-spacing: -0.022em;
+          color: #f1f0ff;
+          margin: 0;
+        }
+        .lp-max-h2 em {
+          font-style: italic;
+          font-weight: 400;
+          color: var(--green-rev);
+        }
+        .lp-max-body {
+          margin: 22px 0 0;
+          max-width: 52ch;
+          font-size: 17px;
+          line-height: 1.55;
+          color: rgba(241, 240, 255, 0.72);
+        }
+        .lp-max-fineprint {
+          margin: 18px 0 0;
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px;
+          letter-spacing: 0.04em;
+          color: rgba(241, 240, 255, 0.45);
+        }
+        .lp-max-cta { margin-top: 36px; }
+
+        /* MAX chat card */
+        .lp-max-card {
+          background: linear-gradient(180deg, #161a23 0%, #0d1117 100%);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 30px 80px -28px rgba(74, 222, 128, 0.25);
+        }
+        .lp-max-card-head {
+          display: flex; align-items: center; gap: 8px;
+          margin-bottom: 18px;
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px;
+          letter-spacing: 0.16em;
+          color: var(--green-rev);
+        }
+        .lp-max-card-vehicle {
+          font-family: var(--font-fraunces), Georgia, serif;
+          color: var(--gold);
+          font-weight: 700;
+        }
+        .lp-max-profit {
+          font-family: var(--font-fraunces), Georgia, serif;
+          color: var(--green-rev);
+          font-weight: 700;
+          font-size: 17px;
+        }
+        .lp-action-chips {
+          margin-top: 14px;
+          display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .lp-action-chip {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          letter-spacing: 0.04em;
+          padding: 5px 12px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.04);
+          color: rgba(255, 255, 255, 0.65);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* ─── TESTIMONIALS ───────────────────────────────────────────── */
+        .lp-voices {
+          position: relative;
+          background: var(--cream);
+          padding: 160px 0 140px;
+          margin-top: -70px;
+          clip-path: polygon(0 70px, 100% 0, 100% 100%, 0 100%);
+        }
+        .lp-voices-inner {
+          max-width: 1240px; margin: 0 auto;
+          padding: 0 28px;
+        }
+        .lp-voices-head { margin: 0 0 80px; }
+        .lp-voices-stack {
+          display: flex; flex-direction: column;
+          gap: 64px;
+        }
+        .lp-voice {
+          position: relative;
+          padding: 28px 36px 24px 64px;
+          max-width: 580px;
+        }
+        .lp-voice::before {
+          content: "\\201C";
+          position: absolute;
+          left: -8px; top: -42px;
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 900;
+          font-size: 180px;
+          line-height: 1;
+          color: rgba(200, 169, 110, 0.18);
+          pointer-events: none;
+          z-index: 0;
+        }
+        .lp-voice-1 { align-self: flex-start; }
+        .lp-voice-2 { align-self: flex-end; margin-top: -32px; }
+        .lp-voice-3 { align-self: center; margin-top: -32px; }
+        @media (max-width: 720px) {
+          .lp-voice-1, .lp-voice-2, .lp-voice-3 { align-self: stretch; margin-top: 0; max-width: 100%; }
+        }
+        .lp-voice-body {
+          position: relative; z-index: 1;
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 500;
+          font-size: 20px;
+          line-height: 1.4;
+          color: var(--ink);
+        }
+        .lp-voice-foot {
+          position: relative; z-index: 1;
+          margin-top: 20px;
+          display: flex; align-items: center; gap: 12px;
+        }
+        .lp-voice-avatar {
+          width: 36px; height: 36px;
+          border-radius: 999px;
+          background: var(--ink);
+          color: var(--cream);
+          display: inline-flex; align-items: center; justify-content: center;
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        .lp-voice-who {
+          font-size: 14px;
+          color: var(--ink);
+          font-weight: 600;
+        }
+        .lp-voice-where {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px;
+          color: var(--ink-muted);
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+        .lp-voice-plan {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          letter-spacing: 0.12em;
+          padding: 3px 10px;
+          border-radius: 999px;
+          background: var(--gold-soft);
+          color: var(--gold);
+          margin-left: 6px;
+        }
+
+        /* ─── PRICING ────────────────────────────────────────────────── */
+        .lp-pricing {
+          background: var(--cream);
+          padding: 80px 0 120px;
+        }
+        .lp-pricing-inner {
+          max-width: 1240px; margin: 0 auto;
+          padding: 0 28px;
+        }
+        .lp-pricing-head { margin: 0 auto 56px; max-width: 720px; text-align: center; }
+        .lp-prices {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 18px;
+          align-items: start;
+        }
+        @media (max-width: 860px) {
+          .lp-prices { grid-template-columns: 1fr; }
+        }
+        .lp-price {
+          background: var(--cream-3);
+          border: 1px solid var(--rule-2);
+          border-radius: 22px;
+          padding: 36px 32px 32px;
+          display: flex; flex-direction: column;
+          transition: transform 280ms var(--ease), box-shadow 280ms var(--ease);
+        }
+        .lp-price:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .lp-price-featured {
+          background: var(--ink);
+          color: var(--cream);
+          border-color: var(--ink);
+          margin-top: -24px;
+          padding-top: 60px;
+          padding-bottom: 56px;
+        }
+        @media (max-width: 860px) { .lp-price-featured { margin-top: 0; padding-top: 36px; } }
+        .lp-price-kicker {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 10px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--gold);
+          margin: 0 0 18px;
+        }
+        .lp-price-title {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 700;
+          font-size: 26px;
+          letter-spacing: -0.012em;
+          margin: 0 0 14px;
+          color: inherit;
+        }
+        .lp-price-num {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 900;
+          font-size: 52px;
+          line-height: 1;
+          letter-spacing: -0.022em;
+          color: inherit;
+        }
+        .lp-price-num-let { font-style: italic; font-weight: 400; }
+        .lp-price-per {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 14px;
+          color: inherit; opacity: 0.55;
+          margin-left: 6px;
+        }
+        .lp-price-desc {
+          margin: 22px 0 0;
+          font-size: 15px;
+          line-height: 1.55;
+          color: inherit;
+          opacity: 0.78;
+        }
+        .lp-price-features {
+          list-style: none;
+          padding: 0;
+          margin: 22px 0 0;
+          display: flex; flex-direction: column;
+          gap: 9px;
+          flex: 1;
+        }
+        .lp-price-features li {
+          display: flex; align-items: flex-start; gap: 10px;
+          font-size: 14px;
+          line-height: 1.5;
+          opacity: 0.88;
+        }
+        .lp-price-features svg { flex-shrink: 0; margin-top: 4px; }
+        .lp-price-cta {
+          margin-top: 32px;
+          display: inline-flex; align-items: center; justify-content: space-between; gap: 8px;
+          padding: 12px 18px;
+          border-radius: 999px;
+          font-size: 14px; font-weight: 600;
+          text-decoration: none;
+          transition: transform 200ms var(--ease);
+        }
+        .lp-price-cta:hover { transform: translateY(-1px); }
+        .lp-price .lp-price-cta {
+          background: var(--ink); color: var(--cream);
+        }
+        .lp-price-featured .lp-price-cta {
+          background: var(--gold); color: var(--ink);
+        }
+
+        /* ─── Final CTA + Footer ─────────────────────────────────────── */
+        .lp-final {
+          background: var(--ink);
+          color: var(--cream);
+          padding: 100px 28px;
+          text-align: center;
+        }
+        .lp-final-inner { max-width: 720px; margin: 0 auto; }
+        .lp-final-h {
+          font-family: var(--font-fraunces), Georgia, serif;
+          font-weight: 700;
+          font-size: clamp(40px, 5vw, 56px);
+          line-height: 1.0;
+          letter-spacing: -0.022em;
+          margin: 0;
+        }
+        .lp-final-h em { font-style: italic; font-weight: 400; color: var(--gold); }
+        .lp-final-sub {
+          margin: 24px auto 0;
+          max-width: 52ch;
+          color: rgba(245, 240, 232, 0.72);
+          font-size: 16px;
+          line-height: 1.6;
+        }
+        .lp-final-cta {
+          margin-top: 36px;
+          display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+        }
+        .lp-footer {
+          background: var(--ink);
+          color: rgba(245, 240, 232, 0.5);
+          padding: 28px;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .lp-footer-inner {
+          max-width: 1240px; margin: 0 auto;
+          display: flex; align-items: center; justify-content: space-between;
+          flex-wrap: wrap; gap: 16px;
+        }
+        .lp-footer-mono {
+          font-family: var(--font-dm-mono), monospace;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+        }
+        .lp-footer-links { display: flex; gap: 22px; }
+        .lp-footer-links a {
+          color: rgba(245, 240, 232, 0.5);
+          font-size: 13px;
+          text-decoration: none;
+          transition: color 200ms var(--ease);
+        }
+        .lp-footer-links a:hover { color: var(--cream); }
       `}</style>
 
-      <main className="lmct-root min-h-screen">
+      <main className="lp">
 
-        {/* ─── Top nav ─────────────────────────────────────────────────── */}
-        <header className="sticky top-0 z-40" style={{ backdropFilter: "blur(10px)", background: "rgba(253, 248, 240, 0.78)", borderBottom: "1px solid var(--rule)" }}>
-          <div className="mx-auto max-w-[1240px] flex items-center justify-between px-6 lg:px-10 h-16">
-            <Link href="/" className="flex items-center gap-2.5">
-              <Mark />
-              <span className="serif text-[19px] font-bold tracking-tight" style={{ color: "var(--ink)" }}>
-                LMCT PRO
+        {/* ─── Nav ───────────────────────────────────────────────────── */}
+        <header className="lp-nav">
+          <div className="lp-nav-row">
+            <Link href="/" className="lp-brand" aria-label="LMCT PRO home">
+              <span className="lp-mark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f5f0e8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 17V9a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v8" />
+                  <circle cx="7.5" cy="17.5" r="2.5" />
+                  <circle cx="16.5" cy="17.5" r="2.5" />
+                </svg>
               </span>
+              <span className="lp-brand-name">LMCT PRO</span>
             </Link>
-            <nav className="hidden md:flex items-center gap-7">
-              <a className="nav-link" href="#platform">Platform</a>
-              <a className="nav-link" href="#how">How it works</a>
-              <a className="nav-link" href="#voices">Dealers</a>
-              <a className="nav-link" href="#pricing">Pricing</a>
+            <nav className="lp-nav-links" aria-label="Primary">
+              <a className="lp-nav-link" href="#platform">Platform</a>
+              <a className="lp-nav-link" href="#bento">Why dealers switch</a>
+              <a className="lp-nav-link" href="#max">MAX</a>
+              <a className="lp-nav-link" href="#pricing">Pricing</a>
             </nav>
-            <div className="flex items-center gap-3">
-              <Link href="/auth/login" className="nav-link hidden sm:inline">Sign in</Link>
-              <Link href="/auth/sign-up" className="btn-primary" style={{ padding: "10px 18px", fontSize: 14 }}>
-                Start trial <Arrow />
+            <div className="lp-nav-cta">
+              <Link href="/auth/login" className="lp-nav-link" style={{ display: "inline" }}>Sign in</Link>
+              <Link href="/demo" className="lp-btn-primary">
+                Book a demo <ArrowRight />
               </Link>
             </div>
           </div>
         </header>
 
-        {/* ─── Hero ────────────────────────────────────────────────────── */}
-        <section className="relative pt-20 lg:pt-28 pb-24 lg:pb-32">
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-            <div className="lg:col-span-7">
-              <p className="kicker mb-6">Built for Victorian LMCT dealers</p>
-              <h1 className="h-display text-[52px] sm:text-[64px] lg:text-[78px]">
-                Run a <span className="serif italic font-normal" style={{ color: "var(--gold)" }}>tighter</span> yard.
-                <br />Sell with conviction.
+        {/* ─── HERO — Moment 1: ambient glow + boundary-breaking badges ─ */}
+        <section className="lp-hero">
+          {/* Organic gold blob top-right */}
+          <svg className="lp-hero-blob" viewBox="0 0 600 600" aria-hidden="true">
+            <defs>
+              <radialGradient id="lp-blob-grad" cx="50%" cy="50%">
+                <stop offset="0%" stopColor="#c8a96e" stopOpacity="0.28" />
+                <stop offset="60%" stopColor="#c8a96e" stopOpacity="0.08" />
+                <stop offset="100%" stopColor="#c8a96e" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+            <path
+              d="M412,90 C500,140 560,220 540,320 C520,420 430,500 320,520 C220,540 120,490 80,400 C40,310 80,200 170,140 C260,80 340,50 412,90 Z"
+              fill="url(#lp-blob-grad)"
+            />
+          </svg>
+
+          <div className="lp-hero-inner">
+            <div className="lp-reveal">
+              <p className="lp-eyebrow">For Australian LMCT dealers</p>
+              <h1 className="lp-h1">
+                Run a <em>tighter</em> yard.<br />Sell with conviction.
               </h1>
-              <p className="lede mt-8 text-[19px]">
+              <p className="lp-sub">
                 LMCT PRO is the dealer management platform built for the way Australian
-                car traders actually work — auction Monday, recon Tuesday, listings live by Wednesday.
-                One screen for your stock, your sales, your compliance, and an AI assistant
-                that knows your inventory by heart.
+                car traders actually work — auction Monday, recon Tuesday, listings live
+                by Wednesday. One screen for your stock, your sales, your compliance, and
+                an AI assistant trained on your inventory.
               </p>
-              <div className="mt-10 flex flex-wrap items-center gap-3">
-                <Link href="/demo" className="btn-primary">
-                  Book a demo <Arrow />
+              <div className="lp-cta-row">
+                <Link href="/demo" className="lp-btn-primary" style={{ padding: "14px 22px", fontSize: 15 }}>
+                  Book a demo <ArrowRight />
                 </Link>
-                <Link href="/auth/sign-up" className="btn-ghost">
+                <Link href="/auth/sign-up" className="lp-btn-ghost">
                   Or start a 14-day trial
                 </Link>
               </div>
-              <p className="footnote mt-6">15-minute screenshare · No credit card · No sales pitch.</p>
+              <p className="lp-trust">30-minute onboarding · No credit card · No lock-in.</p>
             </div>
 
-            {/* 3D mockup */}
-            <div className="lg:col-span-5">
-              <div className="mockup-stage">
-                <DashboardMockup />
+            <div className="lp-hero-stage lp-reveal" aria-hidden="true">
+              <div className="lp-hero-glow" />
+              <HeroCard />
+              <span className="lp-badge" style={{ top: -10, left: -28 }}>
+                <span className="lp-badge-dot" style={{ background: "var(--green-rev)" }} />
+                VP151 auto-filled · 12 sec
+              </span>
+              <span className="lp-badge lp-badge-2" style={{ bottom: 10, right: -36 }}>
+                <span className="lp-badge-dot" style={{ background: "var(--amber)" }} />
+                Camry sold · $4,200 profit
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── DARK FLIP — Moment 2: auto-cycling showcase ──────────────── */}
+        <section id="platform" className="lp-stage">
+          <div className="lp-stage-bg" />
+          <div className="lp-stage-inner">
+            <p className="lp-stage-eyebrow lp-reveal">The platform</p>
+            <h2 className="lp-h2 lp-reveal">
+              The platform, <em>on stage.</em>
+            </h2>
+            <p className="lp-stage-sub lp-reveal">
+              Live stock, a vehicle being added in twelve seconds, a VP151 forming itself, and
+              MAX answering a real dealer question. Tap a tab — it&rsquo;ll keep cycling on its own.
+            </p>
+
+            <div className="lp-tabs lp-reveal" role="tablist">
+              {TABS.map((t) => (
+                <button
+                  key={t.key}
+                  role="tab"
+                  type="button"
+                  aria-selected={tab === t.key}
+                  onClick={() => pick(t.key)}
+                  className={`lp-tab${tab === t.key ? " is-active" : ""}`}
+                >
+                  <span className="lp-tab-dot" />
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="lp-stage-screen lp-reveal">
+              <div className="lp-stage-screen-pad">
+                <PaneStock  active={tab === "stock"} />
+                <PaneAdd    active={tab === "add"}   />
+                <PaneForm   active={tab === "form"}  />
+                <PaneMax    active={tab === "max"}   />
               </div>
             </div>
           </div>
         </section>
 
-        {/* ─── Showcase — Slack-style cycling product tabs ─────────────── */}
-        <section className="ls-section" id="platform">
-          <div className="ls-section-head">
-            <p className="kicker mb-3">Watch it run</p>
-            <h2 className="h-section text-[34px] sm:text-[42px]">
-              The platform, on stage.
-            </h2>
-            <p className="lede mx-auto mt-4" style={{ maxWidth: "54ch" }}>
-              Live stock, a vehicle being added in twelve seconds, a VP151 forming itself, and MAX
-              answering a real dealer question. Tap a tab — it&rsquo;ll keep cycling on its own.
-            </p>
-          </div>
-          <HeroShowcase />
-        </section>
-
-        {/* ─── Trust strip ─────────────────────────────────────────────── */}
-        <section className="border-y" style={{ borderColor: "var(--rule)", background: "var(--cream-2)" }}>
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 py-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Ticker label="LMCT compliance" body="VP151, dealings register, statutory warranty — generated, not chased." />
-            <Ticker label="Australian built" body="Designed around VicRoads forms and the Australian Consumer Law." />
-            <Ticker label="Mobile first" body="Add a car at the auction. Print a receipt from your phone. Install as an app." />
-            <Ticker label="Your data, yours" body="Row-level isolation. Export everything as CSV the moment you ask." />
-          </div>
-        </section>
-
-        {/* ─── The headline pillar: MAX (AI) — dark, the wow moment ────── */}
-        <section
-          className="py-28 lg:py-36 relative overflow-hidden"
-          style={{
-            background:
-              "radial-gradient(120% 100% at 100% 0%, rgba(16,185,129,0.12), transparent 55%), linear-gradient(180deg, #0a0a12 0%, #12121e 100%)",
-            color: "#f1f0ff",
-          }}
-        >
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-            <div className="lg:col-span-5">
-              <p className="kicker mb-4" style={{ color: "var(--money-2)" }}>The Assistant</p>
-              <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]" style={{ color: "#f1f0ff" }}>
-                You hire a colleague.
-                <span className="serif italic font-normal" style={{ color: "var(--money-2)" }}> Not a chatbot.</span>
+        {/* ─── BENTO — Moment 3: four pillars in different sizes ────────── */}
+        <section id="bento" className="lp-bento">
+          <div className="lp-bento-inner">
+            <div className="lp-bento-head lp-reveal">
+              <p className="lp-eyebrow">Why dealers switch</p>
+              <h2 style={{
+                fontFamily: "var(--font-fraunces), Georgia, serif",
+                fontWeight: 700,
+                fontSize: "clamp(34px, 5vw, 50px)",
+                lineHeight: 1.02,
+                letterSpacing: "-0.022em",
+                margin: 0,
+                color: "var(--ink)",
+              }}>
+                The yard, <em style={{ color: "var(--gold)", fontStyle: "italic", fontWeight: 400 }}>made navigable.</em>
               </h2>
-              <p className="mt-6 text-[18px] leading-[1.55]" style={{ color: "rgba(241,240,255,0.72)", maxWidth: "56ch" }}>
-                MAX lives inside your dealership&rsquo;s data. Ask what&rsquo;s aged out,
-                what&rsquo;s margin-thin, what a buyer paid last December — get specific
-                answers in your dealership&rsquo;s tone of voice. Not a generic LLM
-                wrapper. Not a chatbot.
+            </div>
+
+            <div className="lp-bento-grid">
+              {/* Wide 1 — LMCT Compliance */}
+              <article className="lp-card lp-reveal" style={{ minHeight: 380 }}>
+                <p className="lp-card-kicker">LMCT compliance</p>
+                <h3 className="lp-card-title">VP151. Dealings register. Statutory warranty.</h3>
+                <p className="lp-card-body">
+                  Forms generated from the sale, filed quarterly, and printed when you need
+                  them. The paper that used to sit on your desk now lives where it should.
+                </p>
+                <div className="lp-card-vp151" aria-hidden="true">
+                  <p className="lp-vp151-kicker">VicRoads VP151</p>
+                  <p className="lp-vp151-title">2018 Mercedes-Benz C300</p>
+                  <div className="lp-vp151-row"><span>Buyer</span><span>Emma S.</span></div>
+                  <div className="lp-vp151-row"><span>Licence</span><span>VIC · 09421003</span></div>
+                  <div className="lp-vp151-row"><span>Sale date</span><span>27 May 2026</span></div>
+                  <div className="lp-vp151-row"><span>Price</span><span>$32,500</span></div>
+                  <div className="lp-vp151-row"><span>Warranty</span><span>Statutory · 3 mo / 5,000km</span></div>
+                </div>
+              </article>
+
+              {/* Narrow 1 — Australian-built */}
+              <article className="lp-card lp-reveal" style={{ minHeight: 380, overflow: "hidden" }}>
+                <svg className="lp-stat-bg" viewBox="0 0 200 200" aria-hidden="true">
+                  {/* Suburb-map ghost texture */}
+                  <g stroke="#0d1117" strokeWidth="0.5" fill="none">
+                    <circle cx="40" cy="60" r="14" />
+                    <circle cx="120" cy="40" r="22" />
+                    <circle cx="160" cy="120" r="18" />
+                    <circle cx="80" cy="130" r="11" />
+                    <circle cx="50" cy="170" r="8" />
+                    <path d="M40,60 L80,130 L160,120 M120,40 L80,130 L50,170" strokeDasharray="2,3" />
+                  </g>
+                </svg>
+                <p className="lp-card-kicker">Australian built</p>
+                <h3 className="lp-card-title">Made in Melbourne.</h3>
+                <p className="lp-stat-num">100<span className="lp-stat-unit">%</span></p>
+                <p className="lp-stat-sub">Compliant with VIC LMCT rules</p>
+                <p className="lp-card-body" style={{ marginTop: "auto" }}>
+                  Designed around VicRoads forms and the Australian Consumer Law.
+                </p>
+              </article>
+
+              {/* Narrow 2 — Your AI */}
+              <article className="lp-card lp-reveal" style={{ minHeight: 380 }}>
+                <p className="lp-card-kicker">Your AI</p>
+                <h3 className="lp-card-title">A colleague, not a chatbot.</h3>
+                <p className="lp-card-body">
+                  MAX lives inside your data. Specific answers in your dealership&rsquo;s
+                  voice. The full feature tour lives behind the demo.
+                </p>
+                <div className="lp-mini-chat">
+                  <div className="lp-mini-bubble is-user">What did the Tiguan land at?</div>
+                  <div className="lp-mini-bubble is-max">
+                    Sold yesterday — <span className="lp-c-green-bold">$3,400 profit</span>.
+                  </div>
+                </div>
+              </article>
+
+              {/* Wide 2 — Mobile-first */}
+              <article className="lp-card lp-reveal" style={{ minHeight: 380, overflow: "hidden" }}>
+                <p className="lp-card-kicker">Mobile first</p>
+                <h3 className="lp-card-title">Auction floor → listing in twelve seconds.</h3>
+                <p className="lp-card-body">
+                  Scan a plate from your phone, watch the year-make-model-variant resolve
+                  itself, print a tax invoice from the carpark. PWA-installable.
+                </p>
+                <div className="lp-phone-wrap" aria-hidden="true">
+                  <div className="lp-phone">
+                    <div className="lp-phone-screen">
+                      <p className="lp-phone-kicker">Scanner · live</p>
+                      <p className="lp-phone-rego">DPR76M</p>
+                      <p className="lp-phone-meta">2017 VW Tiguan 132TSI<br />Pure White · 84,250 km</p>
+                      <div className="lp-phone-actions">
+                        <span className="lp-phone-btn">Add to stock</span>
+                        <span className="lp-phone-btn">Auto-list</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── MAX — Moment 4: "Not a chatbot." in green ────────────────── */}
+        <section id="max" className="lp-max">
+          <div className="lp-max-bg" />
+          <div className="lp-max-inner">
+            <div className="lp-reveal">
+              <p className="lp-max-eyebrow">Your AI · Hired</p>
+              <h2 className="lp-max-h2">
+                You hire a colleague.<br /><em>Not a chatbot.</em>
+              </h2>
+              <p className="lp-max-body">
+                MAX answers questions about your business with your data.
+                Specific. In your dealership&rsquo;s tone of voice. Knows what&rsquo;s
+                aged out, what&rsquo;s margin-thin, what a buyer paid last December.
+                Drafts listings, prices aged stock, flags risk. Trained on you, not
+                a million strangers.
               </p>
-              <p className="mt-5 mono text-[12px]" style={{ color: "rgba(241,240,255,0.45)", letterSpacing: "0.06em" }}>
-                Built on Claude. Prompt-cached. Tool-using. Trained on your stock at
-                every turn. The clever bits stay behind the demo.
+              <p className="lp-max-fineprint">
+                Built on Claude. Prompt-cached. Tool-using. The clever bits stay behind the demo.
               </p>
-              <div className="mt-10">
-                <Link
-                  href="/demo"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold transition-transform hover:-translate-y-0.5"
-                  style={{ background: "var(--money)", color: "var(--ink)", fontSize: 15 }}
-                >
-                  See MAX on your stock <Arrow />
+              <div className="lp-max-cta">
+                <Link href="/demo" className="lp-btn-green-outline">
+                  See MAX on your stock <ArrowRight />
                 </Link>
               </div>
             </div>
-            <div className="lg:col-span-7">
-              <AssistantVignette />
-            </div>
+
+            <MaxChatCard />
           </div>
         </section>
 
-        {/* ─── Pillar 2 — Inventory ────────────────────────────────────── */}
-        <section className="py-28 lg:py-36">
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-            <div className="lg:col-span-5 order-2 lg:order-1">
-              <p className="kicker mb-4">Inventory</p>
-              <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]">
-                Every car answered for,
-                <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> every day.</span>
+        {/* ─── TESTIMONIALS — Moment 5: ghost quote-mark containers ─────── */}
+        <section className="lp-voices">
+          <div className="lp-voices-inner">
+            <div className="lp-voices-head lp-reveal">
+              <p className="lp-eyebrow">Dealers on LMCT PRO</p>
+              <h2 style={{
+                fontFamily: "var(--font-fraunces), Georgia, serif",
+                fontWeight: 700,
+                fontSize: "clamp(34px, 5vw, 50px)",
+                lineHeight: 1.02,
+                letterSpacing: "-0.022em",
+                color: "var(--ink)",
+                margin: 0,
+                maxWidth: "16ch",
+              }}>
+                Built around the way a real yard runs.
               </h2>
-              <p className="lede mt-6">
-                A real working table — not a card grid. Stale stock surfaces before it
-                costs you a margin point. Listings, scanner, photo cleanup, days-in-stock
-                bands — and another two dozen things that make Tuesday afternoons calmer.
-              </p>
-              <p className="mt-5 mono text-[12px]" style={{ color: "var(--ink-3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                Full feature tour inside the demo.
-              </p>
             </div>
-            <div className="lg:col-span-7 order-1 lg:order-2">
-              <InventoryVignette />
-            </div>
-          </div>
-        </section>
 
-        {/* ─── Pillar 3 — Compliance ───────────────────────────────────── */}
-        <section className="py-28 lg:py-36" style={{ background: "var(--cream-2)" }}>
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-            <div className="lg:col-span-7">
-              <ComplianceVignette />
-            </div>
-            <div className="lg:col-span-5">
-              <p className="kicker mb-4">Compliance</p>
-              <h2 className="h-section text-[40px] sm:text-[48px] lg:text-[56px]">
-                The forms, the register,
-                <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> the licence.</span>
-              </h2>
-              <p className="lede mt-6">
-                VP151 transfers, the dealings register, statutory warranty defaults, GST
-                summary, the buyer receipt — produced when you need them, filed when you
-                don&apos;t. The paper stops sitting on your desk.
-              </p>
-              <p className="mt-5 mono text-[12px]" style={{ color: "var(--ink-3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                Built around the way VicRoads and the ACL actually work.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── How it works ────────────────────────────────────────────── */}
-        <section id="how" className="py-28 border-t" style={{ borderColor: "var(--rule)" }}>
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10">
-            <div className="grid lg:grid-cols-12 gap-12 mb-16">
-              <div className="lg:col-span-4">
-                <p className="kicker mb-3">How it works</p>
-                <h2 className="h-section text-[40px] sm:text-[48px]">
-                  An hour to set up. <br/>A morning to fall in love with it.
-                </h2>
-              </div>
-              <p className="lg:col-span-7 lg:col-start-6 lede self-end">
-                Most dealers we onboard are running a real sale through LMCT PRO by the end
-                of their first day. The team will move your existing stock in for you if
-                that&apos;s where you&apos;d rather start.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-10">
-              <Step n="01" title="Sign up" body="Drop your ABN, LMCT number and dealer details. We provision your workspace inside five minutes, isolated from every other dealer." />
-              <Step n="02" title="Bring in your stock" body="Photograph from your phone, paste a rego, or hand it to us — we&rsquo;ll import from your spreadsheet, CSV, or current DMS." />
-              <Step n="03" title="Sell on" body="Record sales, print transfers, email receipts. The numbers add themselves up at the end of the quarter." />
-            </div>
-          </div>
-        </section>
-
-        {/* ─── Voices ──────────────────────────────────────────────────── */}
-        <section id="voices" className="py-28" style={{ background: "var(--cream-2)" }}>
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10">
-            <p className="kicker mb-3">Dealers</p>
-            <h2 className="h-section text-[40px] sm:text-[48px] max-w-[14ch] mb-14">
-              Built around the way a real yard runs.
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <Quote
-                body="We were paying a bookkeeper to chase the dealings register every quarter. Now it prints itself. The aged-stock email pings me before I notice the car&rsquo;s gone stale."
+            <div className="lp-voices-stack">
+              <Voice
+                cls="lp-voice-1 lp-reveal"
+                body="We were paying a bookkeeper to chase the dealings register every quarter. Now it prints itself. The aged-stock alert pings me before I notice the car&rsquo;s gone stale."
+                initials="JW"
                 who="James W."
                 where="Geelong"
+                plan="Software + AI"
               />
-              <Quote
+              <Voice
+                cls="lp-voice-2 lp-reveal"
                 body="The listing builder gives me Facebook, Carsales and Gumtree copy in one click. Saturday morning is for selling cars again, not typing."
+                initials="AN"
                 who="Anh N."
                 where="Bankstown"
+                plan="Done For You"
               />
-              <Quote
-                body="MAX knows my stock. I asked what to do with a 2018 Ranger sitting at 84 days — it gave me the comparables and a price. Sold it that week."
+              <Voice
+                cls="lp-voice-3 lp-reveal"
+                body="MAX knows my stock. I asked what to do with a 2018 Ranger sitting at 84 days. It gave me the comparables and a price. Sold it that week."
+                initials="MD"
                 who="Marco D."
                 where="Brunswick"
+                plan="Software + AI"
               />
             </div>
           </div>
         </section>
 
-        {/* ─── Pricing ─────────────────────────────────────────────────── */}
-        <section id="pricing" className="py-28">
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10">
-            <div className="mb-14 grid lg:grid-cols-12 gap-8 items-end">
-              <div className="lg:col-span-7">
-                <p className="kicker mb-3">Pricing</p>
-                <h2 className="h-section text-[40px] sm:text-[48px]">
-                  Three ways to run your yard
-                  <span className="serif italic font-normal" style={{ color: "var(--gold)" }}> on LMCT PRO.</span>
-                </h2>
-              </div>
-              <p className="lg:col-span-5 lede">
-                Start with the software and add hands when you&apos;re ready. All plans
-                include the assistant, all compliance reports, and unlimited stock.
-              </p>
+        {/* ─── PRICING ──────────────────────────────────────────────────── */}
+        <section id="pricing" className="lp-pricing">
+          <div className="lp-pricing-inner">
+            <div className="lp-pricing-head lp-reveal">
+              <p className="lp-eyebrow">Pricing</p>
+              <h2 style={{
+                fontFamily: "var(--font-fraunces), Georgia, serif",
+                fontWeight: 700,
+                fontSize: "clamp(34px, 5vw, 50px)",
+                lineHeight: 1.02,
+                letterSpacing: "-0.022em",
+                color: "var(--ink)",
+                margin: 0,
+              }}>
+                Three ways to run <em style={{ color: "var(--gold)", fontStyle: "italic", fontWeight: 400 }}>your yard.</em>
+              </h2>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-5">
-              <PriceCard
+            <div className="lp-prices">
+              <Price
                 kicker="Software"
                 title="Software + AI"
-                price="$249"
-                period="/ month"
+                amount={<>$249<span className="lp-price-per">/ month</span></>}
                 description="The full platform, on your phone and your laptop, with the assistant trained on your stock."
                 features={[
                   "Unlimited vehicles, sales and customers",
                   "All compliance reports + PDF + CSV",
                   "MAX, your AI assistant",
                   "Resend buyer receipts",
-                  "Mobile / PWA install",
+                  "PWA-installable",
                 ]}
                 cta="Start free trial"
                 href="/auth/sign-up"
               />
-              <PriceCard
+              <Price
                 featured
                 kicker="Most chosen"
                 title="Done For You"
-                price="$799"
-                period="/ month"
+                amount={<>$799<span className="lp-price-per">/ month</span></>}
                 description="We take the listings, the photo retouching, the buyer follow-up. You focus on buying and closing."
                 features={[
                   "Everything in Software + AI",
@@ -673,11 +1675,10 @@ export default function HomePage() {
                 cta="Book a demo"
                 href="/demo"
               />
-              <PriceCard
-                kicker="At scale"
+              <Price
+                kicker="Growth"
                 title="Growth"
-                price="Let’s talk"
-                period=""
+                amount={<><span className="lp-price-num-let">Let&rsquo;s talk</span></>}
                 description="Multi-yard operators, finance brokers, and dealer groups that need bespoke integration."
                 features={[
                   "Everything in Done For You",
@@ -693,70 +1694,25 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ─── FAQ ─────────────────────────────────────────────────────── */}
-        <section className="py-28 border-t" style={{ borderColor: "var(--rule)" }}>
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 grid lg:grid-cols-12 gap-12">
-            <div className="lg:col-span-4">
-              <p className="kicker mb-3">Questions</p>
-              <h2 className="h-section text-[40px] sm:text-[48px]">
-                Things dealers ask first.
-              </h2>
-              <p className="lede mt-6">
-                Don&rsquo;t see your question? Email us at{" "}
-                <a href="mailto:hello@lmctpro.com.au" className="underline underline-offset-4" style={{ color: "var(--ink)" }}>
-                  hello@lmctpro.com.au
-                </a>{" "}— we usually reply same-day.
-              </p>
-            </div>
-            <div className="lg:col-span-7 lg:col-start-6 divide-y" style={{ borderColor: "var(--rule)" }}>
-              <Faq
-                q="Will this replace my current DMS?"
-                a="Yes. LMCT PRO covers stock, sales, customers, compliance and reporting. We’ll migrate your existing data — CSV from a spreadsheet, export from your current system, or by hand if that’s easiest."
-              />
-              <Faq
-                q="Is it built for VIC dealers specifically?"
-                a="Built first for VIC because that’s where we know the rules best — VP151, statutory warranty, the dealings register requirement. NSW and QLD are first-class; other states are coming."
-              />
-              <Faq
-                q="What about my accountant?"
-                a="The GST report is BAS-ready. Quarterly CSV exports drop into Xero or MYOB cleanly. Direct Xero integration is on the roadmap; in the meantime accountants tell us our PDFs are easier to read than what they were getting before."
-              />
-              <Faq
-                q="How does the AI assistant get my data?"
-                a="The assistant runs server-side. Your stock, sales and customer records are read under your authenticated session — row-level security means no other dealer ever sees your data, including the AI. We use Claude under the hood and cache the system prompt to keep it fast and affordable."
-              />
-              <Faq
-                q="Can I leave?"
-                a="Any time. Export every record as CSV in one click. We keep no data hostage and we don’t lock you in."
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ─── Final CTA ───────────────────────────────────────────────── */}
-        <section className="py-24" style={{ background: "var(--ink)", color: "var(--cream)" }}>
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 text-center">
-            <p className="kicker mb-5" style={{ color: "var(--gold)" }}>Start today</p>
-            <h2 className="serif text-[44px] sm:text-[60px] font-bold tracking-tight" style={{ lineHeight: 0.98 }}>
-              Fourteen days. <span className="italic font-normal" style={{ color: "var(--gold)" }}>No credit card.</span>
+        {/* ─── Final CTA ────────────────────────────────────────────────── */}
+        <section className="lp-final">
+          <div className="lp-final-inner lp-reveal">
+            <p className="lp-eyebrow" style={{ color: "var(--gold)", marginBottom: 22 }}>Start today</p>
+            <h2 className="lp-final-h">
+              Fourteen days. <em>No credit card.</em>
             </h2>
-            <p className="mt-6 mx-auto max-w-[52ch] text-[17px]" style={{ color: "rgba(253,248,240,0.7)" }}>
-              Sign up, bring in a handful of vehicles, run a sale. If LMCT PRO doesn&rsquo;t
-              feel like the easiest software your dealership has ever used, we&rsquo;ll help
-              you export every record and part as friends.
+            <p className="lp-final-sub">
+              Bring your stock. Book a demo, run a sale through the platform, and decide
+              if LMCT PRO becomes the easiest software your dealership has ever used.
             </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Link
-                href="/demo"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold transition-transform hover:-translate-y-0.5"
-                style={{ background: "var(--money)", color: "var(--ink)", fontSize: 15 }}
-              >
-                Book a demo <Arrow />
+            <div className="lp-final-cta">
+              <Link href="/demo" className="lp-btn-cream-on-dark">
+                Book a demo <ArrowRight />
               </Link>
               <Link
                 href="/auth/sign-up"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold border transition-colors hover:bg-white/5"
-                style={{ borderColor: "rgba(253,248,240,0.25)", color: "var(--cream)", fontSize: 15 }}
+                className="lp-btn-cream-on-dark"
+                style={{ background: "transparent", color: "var(--cream)", border: "1px solid rgba(245,240,232,0.25)" }}
               >
                 Or start the trial
               </Link>
@@ -764,20 +1720,13 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ─── Footer ──────────────────────────────────────────────────── */}
-        <footer className="py-12 border-t" style={{ borderColor: "var(--rule)" }}>
-          <div className="mx-auto max-w-[1240px] px-6 lg:px-10 flex flex-wrap items-center justify-between gap-6">
-            <div className="flex items-center gap-2.5">
-              <Mark />
-              <span className="serif text-[16px] font-bold tracking-tight" style={{ color: "var(--ink)" }}>LMCT PRO</span>
-            </div>
-            <p className="mono text-[11px]" style={{ color: "var(--ink-3)", letterSpacing: "0.06em" }}>
-              © {new Date().getFullYear()} LMCT PRO PTY LTD · MELBOURNE
-            </p>
-            <div className="flex items-center gap-6 text-[13px]" style={{ color: "var(--ink-3)" }}>
-              <a href="#" className="hover:opacity-80">Privacy</a>
-              <a href="#" className="hover:opacity-80">Terms</a>
-              <a href="mailto:hello@lmctpro.com.au" className="hover:opacity-80">Contact</a>
+        <footer className="lp-footer">
+          <div className="lp-footer-inner">
+            <span className="lp-footer-mono">© {new Date().getFullYear()} LMCT PRO PTY LTD · MELBOURNE</span>
+            <div className="lp-footer-links">
+              <a href="#">Privacy</a>
+              <a href="#">Terms</a>
+              <a href="mailto:hello@lmctpro.com.au">Contact</a>
             </div>
           </div>
         </footer>
@@ -786,328 +1735,276 @@ export default function HomePage() {
   )
 }
 
-/* ── Components ──────────────────────────────────────────────────────── */
+/* ─── Small inline pieces ─────────────────────────────────────────────── */
 
-function Mark() {
+function ArrowRight() {
   return (
-    <span
-      className="inline-flex items-center justify-center"
-      style={{ width: 32, height: 32, borderRadius: 8, background: "var(--ink)" }}
-      aria-hidden="true"
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fdf8f0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 17V9a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v8" />
-        <circle cx="7.5" cy="17.5" r="2.5" />
-        <circle cx="16.5" cy="17.5" r="2.5" />
-      </svg>
-    </span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14" /><path d="M13 5l7 7-7 7" />
+    </svg>
   )
 }
 
-function Ticker({ label, body }: { label: string; body: string }) {
+function Check() {
   return (
-    <div className="ticker-item pl-5">
-      <p className="kicker mb-1">{label}</p>
-      <p className="text-[14px] leading-relaxed" style={{ color: "var(--ink-2)" }}>{body}</p>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  )
+}
+
+function HeroCard() {
+  return (
+    <div className="lp-hero-card">
+      <div className="lp-hero-chrome">
+        <div className="lp-hero-dots"><span /><span /><span /></div>
+        <span className="lp-hero-url">lmctpro.com.au / dashboard</span>
+        <span className="lp-hero-max"><span className="lp-pulse" /> MAX</span>
+      </div>
+      <div className="lp-hero-body">
+        <div className="lp-hero-tile">
+          <Tile label="IN STOCK" value="42" />
+          <Tile label="SOLD MTD" value="11" money />
+          <Tile label="REVENUE"  value="$284K" />
+          <Tile label="PROFIT"   value="$48K" money />
+        </div>
+        <div className="lp-hero-table">
+          <HeroRow rego="DPR76M" car="2017 VW Tiguan 132TSI"     days={15} price="$18,999"  tone="green" />
+          <HeroRow rego="VMDMR"  car="2022 Lamborghini Urus"     days={67} price="$369,000" tone="amber" />
+          <HeroRow rego="2CY1PF" car="2018 Mercedes C300"        days={92} price="$32,500"  tone="red"   />
+          <HeroRow rego="QRT332" car="2021 Toyota RAV4 Cruiser"  days={6}  price="$41,750"  tone="green" />
+        </div>
+      </div>
     </div>
   )
 }
 
-function Feat({ children }: { children: React.ReactNode }) {
+function Tile({ label, value, money }: { label: string; value: string; money?: boolean }) {
   return (
-    <li className="flex items-start gap-3 text-[15px]" style={{ color: "var(--ink-2)" }}>
-      <span aria-hidden="true" className="mt-1.5 inline-block" style={{ width: 18, height: 1, background: "var(--gold)" }} />
-      <span>{children}</span>
-    </li>
-  )
-}
-
-function Step({ n, title, body }: { n: string; title: string; body: React.ReactNode }) {
-  return (
-    <div>
-      <p className="mono text-[13px] mb-3" style={{ color: "var(--gold-2)", letterSpacing: "0.16em" }}>{n}</p>
-      <h3 className="serif text-[26px] font-bold mb-2" style={{ color: "var(--ink)" }}>{title}</h3>
-      <p className="text-[15px] leading-relaxed" style={{ color: "var(--ink-3)" }}>{body}</p>
+    <div className="lp-tile">
+      <div className="lp-tile-label">{label}</div>
+      <div className={`lp-tile-val${money ? " is-money" : ""}`}>{value}</div>
     </div>
   )
 }
 
-function Quote({ body, who, where }: { body: string; who: string; where: string }) {
+function HeroRow({ rego, car, days, price, tone }: { rego: string; car: string; days: number; price: string; tone: "green" | "amber" | "red" }) {
+  const cls = tone === "red" ? "lp-c-red" : tone === "amber" ? "lp-c-amber" : "lp-c-green"
   return (
-    <figure className="panel p-7 lift">
-      <svg width="28" height="22" viewBox="0 0 28 22" fill="none" aria-hidden="true" style={{ marginBottom: 18 }}>
-        <path d="M0 22V13.5C0 6 4 1 11 0V4.5C7 5.5 4.5 8.5 4.5 13H11V22H0ZM17 22V13.5C17 6 21 1 28 0V4.5C24 5.5 21.5 8.5 21.5 13H28V22H17Z" fill="#d4921a" fillOpacity="0.35" />
-      </svg>
-      <blockquote className="serif text-[19px] leading-snug" style={{ color: "var(--ink)" }}>
-        {body}
-      </blockquote>
-      <figcaption className="mt-6 flex items-center gap-2 text-[13px]">
-        <span className="font-semibold" style={{ color: "var(--ink)" }}>{who}</span>
-        <span style={{ color: "var(--ink-3)" }}>·</span>
-        <span className="mono uppercase" style={{ color: "var(--ink-3)", letterSpacing: "0.12em", fontSize: 11 }}>{where}</span>
+    <div className="lp-hero-row">
+      <span className="lp-hero-rego">{rego}</span>
+      <span className="lp-hero-car">{car}</span>
+      <span className={`lp-hero-days ${cls}`}>{days}d</span>
+      <span className="lp-hero-price">{price}</span>
+    </div>
+  )
+}
+
+/* ─── Stage panes ─────────────────────────────────────────────────────── */
+
+function PaneStock({ active }: { active: boolean }) {
+  return (
+    <div className={`lp-stage-pane lp-pane-stock${active ? " is-active" : ""}`}>
+      <div className="lp-stock-kpis">
+        <StockKpi label="IN STOCK" value="42" />
+        <StockKpi label="SOLD MTD" value="11" money />
+        <StockKpi label="REVENUE" value="$284K" />
+        <StockKpi label="PROFIT" value="$48K" money />
+      </div>
+      <div className="lp-stock-rows">
+        <StockRow stock="S-104" car="2021 Toyota RAV4 Cruiser" body="SUV"   days={6}  price="$41,750" tone="green" />
+        <StockRow stock="S-097" car="2017 VW Tiguan 132TSI"    body="SUV"   days={15} price="$18,999" tone="green" />
+        <StockRow stock="S-088" car="2022 Mazda CX-5 Akera"    body="SUV"   days={41} price="$46,900" tone="amber" />
+        <StockRow stock="S-073" car="2018 Mercedes C300"        body="Sedan" days={92} price="$32,500" tone="red"   />
+      </div>
+    </div>
+  )
+}
+
+function StockKpi({ label, value, money }: { label: string; value: string; money?: boolean }) {
+  return (
+    <div className="lp-tile">
+      <div className="lp-tile-label">{label}</div>
+      <div className={`lp-tile-val${money ? " is-money" : ""}`}>{value}</div>
+    </div>
+  )
+}
+
+function StockRow({ stock, car, body, days, price, tone }: { stock: string; car: string; body: string; days: number; price: string; tone: "green" | "amber" | "red" }) {
+  const cls = tone === "red" ? "lp-c-red" : tone === "amber" ? "lp-c-amber" : "lp-c-green"
+  return (
+    <div className="lp-stock-row">
+      <span className="lp-stock-row-stock">{stock}</span>
+      <span className="lp-stock-row-car">{car}</span>
+      <span className="lp-stock-row-body">{body}</span>
+      <span className={`lp-stock-row-days ${cls}`}>{days}d</span>
+      <span className="lp-stock-row-price">{price}</span>
+    </div>
+  )
+}
+
+function PaneAdd({ active }: { active: boolean }) {
+  const fields: { label: string; value: string }[] = [
+    { label: "Rego",      value: "DPR76M" },
+    { label: "Year",      value: "2017" },
+    { label: "Make",      value: "Volkswagen" },
+    { label: "Model",     value: "Tiguan 132TSI" },
+    { label: "Odometer",  value: "84,250 km" },
+    { label: "Colour",    value: "Pure White" },
+    { label: "Purchase",  value: "$14,500" },
+    { label: "Ask price", value: "$18,999" },
+  ]
+  return (
+    <div className={`lp-stage-pane lp-pane-add${active ? " is-active" : ""}`}>
+      <div className="lp-add-grid">
+        {fields.map((f, i) => (
+          <div key={f.label} className="lp-add-field" style={{ animationDelay: `${i * 0.32}s` }}>
+            <span className="lp-add-label">{f.label}</span>
+            <span className="lp-add-val">{f.value}</span>
+          </div>
+        ))}
+      </div>
+      <div className="lp-add-done">
+        <Check />
+        <span>Added to stock · S-097 · 12 seconds</span>
+      </div>
+    </div>
+  )
+}
+
+function PaneForm({ active }: { active: boolean }) {
+  const rows: { k: string; v: string }[] = [
+    { k: "Buyer",       v: "Emma S." },
+    { k: "Licence",     v: "VIC · 09421003" },
+    { k: "Address",     v: "42 Park Road, Hawthorn" },
+    { k: "Phone",       v: "0413 552 081" },
+    { k: "Sale date",   v: "27 May 2026" },
+    { k: "Sale price",  v: "$32,500" },
+  ]
+  return (
+    <div className={`lp-stage-pane lp-pane-form${active ? " is-active" : ""}`}>
+      <div className="lp-form-head">
+        <span className="lp-form-kicker">VicRoads VP151 — Transfer of Registration</span>
+        <span className="lp-form-title">2018 Mercedes-Benz C300</span>
+        <span className="lp-form-meta">STOCK S-073 · REGO 2CY1PF</span>
+      </div>
+      <div className="lp-form-grid">
+        {rows.map((r, i) => (
+          <div key={r.k} className="lp-formrow" style={{ animationDelay: `${0.1 + i * 0.32}s` }}>
+            <span className="lp-form-k">{r.k}</span>
+            <span className="lp-form-v">{r.v}</span>
+          </div>
+        ))}
+      </div>
+      <div className="lp-form-docs">
+        {["Tax invoice", "Transfer form", "Buyer receipt"].map((label, i) => (
+          <span key={label} className="lp-form-docpill" style={{ animationDelay: `${2.4 + i * 0.25}s` }}>
+            {label}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PaneMax({ active }: { active: boolean }) {
+  return (
+    <div className={`lp-stage-pane lp-pane-max${active ? " is-active" : ""}`}>
+      <div className="lp-chat">
+        <div className="lp-bubble lp-bubble-user" style={{ animationDelay: "0s" }}>
+          What should I do with the white Tiguan?
+        </div>
+        <div className="lp-typing">
+          <span /><span /><span />
+        </div>
+        <div className="lp-bubble lp-bubble-max" style={{ animationDelay: "1.8s" }}>
+          The <span className="lp-c-gold">2017 Tiguan 132TSI (DPR76M)</span> has been on the lot 15 days at $18,999.
+        </div>
+        <div className="lp-bubble lp-bubble-max is-muted" style={{ animationDelay: "2.6s" }}>
+          Comparables in your last 90 days sold around $18.2K–$19.4K, average 22 days held.
+          Hold for now — revisit at 30 days and consider <span className="lp-c-green-bold">$17,990</span> if no enquiries.
+        </div>
+      </div>
+      <div className="lp-tools">
+        {["lookup_vehicle_by_rego", "top_makes_last_n_days", "aged_stock_action_plan"].map((t) => (
+          <span key={t} className="lp-tool">{t}()</span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MaxChatCard() {
+  return (
+    <div className="lp-max-card lp-reveal">
+      <div className="lp-max-card-head">
+        <span className="lp-pulse" />
+        MAX · ONLINE
+      </div>
+      <div className="lp-chat">
+        <div className="lp-bubble lp-bubble-user" style={{ opacity: 1, transform: "none" }}>
+          What did we sell the white Tiguan for?
+        </div>
+        <div className="lp-bubble lp-bubble-max" style={{ opacity: 1, transform: "none" }}>
+          The <span className="lp-max-card-vehicle">2017 VW Tiguan 132TSI (DPR76M)</span> sold yesterday
+          to Marcus L. for <span className="lp-mono">$19,250</span>.
+        </div>
+        <div className="lp-bubble lp-bubble-max is-muted" style={{ opacity: 1, transform: "none" }}>
+          <span>Profit: </span><span className="lp-max-profit">$3,420</span> · 16.4% margin · 17 days held.
+        </div>
+      </div>
+      <div className="lp-action-chips">
+        <span className="lp-action-chip">View vehicle</span>
+        <span className="lp-action-chip">Drop price</span>
+        <span className="lp-action-chip">Ask more</span>
+      </div>
+    </div>
+  )
+}
+
+function Voice({ cls, body, initials, who, where, plan }: { cls: string; body: string; initials: string; who: string; where: string; plan: string }) {
+  return (
+    <figure className={`lp-voice ${cls}`}>
+      <blockquote className="lp-voice-body">{body}</blockquote>
+      <figcaption className="lp-voice-foot">
+        <span className="lp-voice-avatar">{initials}</span>
+        <span className="lp-voice-who">{who}</span>
+        <span className="lp-voice-where">· {where}</span>
+        <span className="lp-voice-plan">{plan}</span>
       </figcaption>
     </figure>
   )
 }
 
-function PriceCard({
-  kicker, title, price, period, description, features, cta, href, featured,
+function Price({
+  kicker, title, amount, description, features, cta, href, featured,
 }: {
-  kicker: string; title: string; price: string; period: string; description: string;
-  features: string[]; cta: string; href: string; featured?: boolean;
+  kicker: string
+  title: string
+  amount: React.ReactNode
+  description: string
+  features: string[]
+  cta: string
+  href: string
+  featured?: boolean
 }) {
-  const body  = featured ? "rgba(253,248,240,0.88)" : "var(--ink-2)"
-  const muted = featured ? "rgba(253,248,240,0.65)" : "var(--ink-3)"
   return (
-    <div className={`price-card lift p-8 flex flex-col${featured ? " featured" : ""}`}>
-      <div className="flex items-center justify-between">
-        <p className="pill" style={featured ? { background: "rgba(212,146,26,0.18)", color: "var(--gold)", borderColor: "rgba(212,146,26,0.35)" } : undefined}>{kicker}</p>
-      </div>
-      <h3 className="serif text-[28px] font-bold mt-5" style={{ color: featured ? "var(--cream)" : "var(--ink)" }}>{title}</h3>
-      <div className="mt-2 flex items-baseline gap-1.5">
-        <span className="mono text-[34px] font-medium" style={{ color: featured ? "var(--cream)" : "var(--ink)" }}>{price}</span>
-        {period && <span className="mono text-[14px]" style={{ color: muted }}>{period}</span>}
-      </div>
-      <p className="text-[15px] leading-relaxed mt-5" style={{ color: body }}>{description}</p>
-      <ul className="mt-7 space-y-2.5 flex-1">
+    <div className={`lp-price${featured ? " lp-price-featured" : ""} lp-reveal`}>
+      <p className="lp-price-kicker" style={featured ? { color: "var(--gold)" } : undefined}>{kicker}</p>
+      <h3 className="lp-price-title">{title}</h3>
+      <div className="lp-price-num">{amount}</div>
+      <p className="lp-price-desc">{description}</p>
+      <ul className="lp-price-features">
         {features.map((f) => (
-          <li key={f} className="flex items-start gap-3 text-[14px]" style={{ color: body }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={featured ? "var(--gold)" : "var(--gold-2)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mt-1 shrink-0">
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
+          <li key={f}>
+            <Check />
             <span>{f}</span>
           </li>
         ))}
       </ul>
-      <Link
-        href={href}
-        className="mt-9 inline-flex items-center justify-between rounded-full px-5 py-3 font-semibold transition-transform hover:-translate-y-0.5"
-        style={featured
-          ? { background: "var(--gold)", color: "var(--ink)", fontSize: 14 }
-          : { background: "var(--ink)", color: "var(--cream)", fontSize: 14 }}
-      >
-        <span>{cta}</span>
-        <Arrow />
+      <Link href={href} className="lp-price-cta">
+        {cta} <ArrowRight />
       </Link>
-    </div>
-  )
-}
-
-function Faq({ q, a }: { q: string; a: string }) {
-  return (
-    <details className="py-5 group">
-      <summary className="flex items-center justify-between cursor-pointer list-none">
-        <span className="serif text-[20px] font-semibold pr-6" style={{ color: "var(--ink)" }}>{q}</span>
-        <span className="shrink-0 grid place-items-center transition-transform group-open:rotate-45" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 999, border: "1px solid var(--rule-2)" }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </span>
-      </summary>
-      <p className="mt-3 max-w-[64ch] text-[15px] leading-relaxed" style={{ color: "var(--ink-3)" }}>{a}</p>
-    </details>
-  )
-}
-
-/* ── 3D dashboard mockup ────────────────────────────────────────────── */
-
-function DashboardMockup() {
-  return (
-    <div className="mockup p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1.5">
-          <span className="mockup-dot" style={{ background: "rgba(255,255,255,0.18)" }} />
-          <span className="mockup-dot" style={{ background: "rgba(255,255,255,0.18)" }} />
-          <span className="mockup-dot" style={{ background: "rgba(255,255,255,0.18)" }} />
-        </div>
-        <span className="mockup-stat text-[10px]" style={{ color: "rgba(255,255,255,0.5)", letterSpacing: "0.1em" }}>LMCTPRO.COM.AU / DASHBOARD</span>
-        <span className="mockup-stat text-[10px] inline-flex items-center gap-1.5" style={{ color: "#a78bfa" }}>
-          <span className="blink" style={{ width: 6, height: 6, borderRadius: 999, background: "#a78bfa" }} />
-          MAX
-        </span>
-      </div>
-
-      <div className="mb-4">
-        <p className="text-[13px] font-semibold" style={{ color: "#f1f0ff" }}>Westside Motors</p>
-        <p className="mockup-stat text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>WED · 27 MAY</p>
-      </div>
-
-      <div className="grid grid-cols-4 gap-2 mb-4">
-        <MockKpi label="IN STOCK"      value="42"    accent="#f1f0ff" />
-        <MockKpi label="SOLD MTD"      value="11"    accent="#10b981" />
-        <MockKpi label="REVENUE"       value="$284K" accent="#f1f0ff" />
-        <MockKpi label="PROFIT"        value="$48K"  accent="#10b981" />
-      </div>
-
-      <div className="rounded-lg p-2.5 mb-3 flex items-center gap-2" style={{ background: "rgba(239, 68, 68, 0.10)", border: "1px solid rgba(239, 68, 68, 0.22)" }}>
-        <span className="mockup-stat text-[10px] font-semibold" style={{ color: "#fca5a5" }}>3 VEHICLES AGED 60+</span>
-        <span className="mockup-stat text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>· $74K tied up</span>
-      </div>
-
-      <div className="rounded-lg overflow-hidden" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-        <MockRow rego="DPR76M" car="2017 VW Tiguan 132TSI"     days={15} price="$18,999"  tone="ok" />
-        <MockRow rego="VMDMR"  car="2022 Lamborghini Urus"      days={67} price="$369,000" tone="warn" />
-        <MockRow rego="2CY1PF" car="2018 Mercedes C300"         days={92} price="$32,500"  tone="danger" />
-        <MockRow rego="QRT332" car="2021 Toyota RAV4 Cruiser"   days={6}  price="$41,750"  tone="ok" />
-      </div>
-    </div>
-  )
-}
-
-function MockKpi({ label, value, accent }: { label: string; value: string; accent: string }) {
-  return (
-    <div className="rounded-md p-2.5" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)" }}>
-      <p className="mockup-stat text-[9px]" style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em" }}>{label}</p>
-      <p className="mockup-stat text-[18px] font-medium leading-tight mt-1" style={{ color: accent }}>{value}</p>
-    </div>
-  )
-}
-
-function MockRow({ rego, car, days, price, tone }: { rego: string; car: string; days: number; price: string; tone: "ok" | "warn" | "danger" }) {
-  const dColor = tone === "danger" ? "#fca5a5" : tone === "warn" ? "#fbbf24" : "#34d399"
-  return (
-    <div className="mockup-row flex items-center gap-3 px-3 py-2">
-      <span className="mockup-stat text-[10px]" style={{ color: "rgba(255,255,255,0.4)", width: 60 }}>{rego}</span>
-      <span className="text-[12px] flex-1 truncate" style={{ color: "#f1f0ff" }}>{car}</span>
-      <span className="mockup-stat text-[11px]" style={{ color: dColor }}>{days}d</span>
-      <span className="mockup-stat text-[11px] font-medium" style={{ color: "#f1f0ff", width: 64, textAlign: "right" }}>{price}</span>
-    </div>
-  )
-}
-
-/* ── Pillar vignettes ────────────────────────────────────────────────── */
-
-function InventoryVignette() {
-  return (
-    <div className="panel p-6 lg:p-8 lift">
-      <div className="flex items-center justify-between mb-5">
-        <span className="pill">Stock · 42 vehicles</span>
-        <div className="flex gap-1.5">
-          <span className="mono text-[10px] px-2 py-1 rounded-md" style={{ background: "var(--ink)", color: "var(--cream)" }}>TABLE</span>
-          <span className="mono text-[10px] px-2 py-1 rounded-md" style={{ border: "1px solid var(--rule-2)", color: "var(--ink-3)" }}>GRID</span>
-        </div>
-      </div>
-      <div className="space-y-1">
-        {[
-          { stock: "S-104", car: "2021 Toyota RAV4 Cruiser",     body: "SUV",   days: 6,  price: "$41,750", tone: "ok" },
-          { stock: "S-097", car: "2017 VW Tiguan 132TSI",        body: "SUV",   days: 15, price: "$18,999", tone: "ok" },
-          { stock: "S-088", car: "2022 Mazda CX-5 Akera",        body: "SUV",   days: 41, price: "$46,900", tone: "watch" },
-          { stock: "S-073", car: "2018 Mercedes C300",            body: "Sedan", days: 92, price: "$32,500", tone: "danger" },
-          { stock: "S-069", car: "2019 Hyundai i30 N-Line",      body: "Hatch", days: 11, price: "$24,990", tone: "ok" },
-        ].map((row) => (
-          <div key={row.stock} className="flex items-center gap-4 px-3 py-2.5 rounded-lg transition-colors hover:bg-white/40">
-            <span className="mono text-[12px]" style={{ color: "var(--ink-3)", width: 44 }}>{row.stock}</span>
-            <span className="text-[14px] flex-1 truncate" style={{ color: "var(--ink)" }}>{row.car}</span>
-            <span className="mono text-[12px]" style={{ color: "var(--ink-3)", width: 50 }}>{row.body}</span>
-            <span
-              className="mono text-[12px] font-medium"
-              style={{
-                color: row.tone === "danger" ? "#b91c1c" : row.tone === "watch" ? "#b45309" : "#047857",
-                width: 36, textAlign: "right",
-              }}
-            >
-              {row.days}d
-            </span>
-            <span className="mono text-[13px] font-medium" style={{ color: "var(--ink)", width: 72, textAlign: "right" }}>{row.price}</span>
-          </div>
-        ))}
-      </div>
-      <div className="mt-6 flex items-center justify-between pt-5" style={{ borderTop: "1px solid var(--rule)" }}>
-        <p className="mono text-[11px]" style={{ color: "var(--ink-3)", letterSpacing: "0.1em" }}>QUALITY FILTERS</p>
-        <div className="flex gap-2 flex-wrap">
-          <span className="mono text-[10px] px-2.5 py-1 rounded-full" style={{ border: "1px solid var(--rule-2)", color: "var(--ink-2)" }}>No photos · 3</span>
-          <span className="mono text-[10px] px-2.5 py-1 rounded-full" style={{ border: "1px solid var(--rule-2)", color: "var(--ink-2)" }}>No description · 1</span>
-          <span className="mono text-[10px] px-2.5 py-1 rounded-full" style={{ border: "1px solid var(--rule-2)", color: "var(--ink-2)" }}>PPSR pending · 5</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function ComplianceVignette() {
-  return (
-    <div className="panel p-6 lg:p-8 lift relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 gold-rule" />
-      <p className="kicker mb-4">VicRoads VP151 — Transfer of Registration</p>
-      <h3 className="serif text-[24px] font-bold mb-1" style={{ color: "var(--ink)" }}>2018 Mercedes-Benz C300</h3>
-      <p className="mono text-[12px]" style={{ color: "var(--ink-3)" }}>STOCK S-073 · REGO 2CY1PF · VIN WDDWF4DB8JR353201</p>
-
-      <div className="grid grid-cols-2 gap-x-8 gap-y-3 mt-7">
-        <FormRow k="Buyer"      v="Emma S." />
-        <FormRow k="Licence"    v="VIC · 09421003" />
-        <FormRow k="Address"    v="42 Park Road, Hawthorn" />
-        <FormRow k="Phone"      v="0413 552 081" />
-        <FormRow k="Sale date"  v="27 May 2026" />
-        <FormRow k="Sale price" v="$32,500.00" />
-        <FormRow k="Deposit"    v="$2,000.00" />
-        <FormRow k="Warranty"   v="Statutory · 3 mo / 5,000km" />
-      </div>
-
-      <div className="mt-7 grid grid-cols-3 gap-2.5">
-        <MiniPill label="Tax invoice" />
-        <MiniPill label="Transfer form" />
-        <MiniPill label="Buyer receipt" />
-      </div>
-    </div>
-  )
-}
-function FormRow({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="flex flex-col">
-      <span className="mono text-[10px] mb-1" style={{ color: "var(--ink-3)", letterSpacing: "0.12em", textTransform: "uppercase" }}>{k}</span>
-      <span className="text-[14px] font-medium" style={{ color: "var(--ink)" }}>{v}</span>
-    </div>
-  )
-}
-function MiniPill({ label }: { label: string }) {
-  return (
-    <div className="text-center py-2.5 rounded-lg mono text-[11px]" style={{ background: "var(--ink)", color: "var(--cream)", letterSpacing: "0.08em" }}>
-      {label}
-    </div>
-  )
-}
-
-function AssistantVignette() {
-  return (
-    <div
-      className="rounded-2xl p-6 lg:p-8 lift relative overflow-hidden"
-      style={{
-        background: "linear-gradient(160deg, #0a0a12 0%, #18182a 100%)",
-        border: "1px solid rgba(139,92,246,0.18)",
-        boxShadow: "0 30px 80px -30px rgba(139,92,246,0.25)",
-      }}
-    >
-      <div className="flex items-center gap-2 mb-6">
-        <span className="blink" style={{ width: 8, height: 8, borderRadius: 999, background: "#a78bfa" }} />
-        <span className="mono text-[11px]" style={{ color: "#a78bfa", letterSpacing: "0.18em" }}>MAX · ONLINE</span>
-      </div>
-
-      <div className="flex justify-end mb-3">
-        <div className="max-w-[80%] rounded-2xl rounded-br-sm px-4 py-3" style={{ background: "rgba(139,92,246,0.18)", border: "1px solid rgba(139,92,246,0.25)" }}>
-          <p className="text-[14px]" style={{ color: "#f1f0ff" }}>What should I do with the white Tiguan?</p>
-        </div>
-      </div>
-
-      <div className="flex">
-        <div className="max-w-[88%] rounded-2xl rounded-bl-sm px-4 py-3.5" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <p className="text-[14px] leading-relaxed" style={{ color: "#f1f0ff" }}>
-            The <span style={{ color: "#a78bfa" }}>2017 Tiguan 132TSI (DPR76M)</span> has been on the lot 15 days at <span className="mono">$18,999</span>.
-          </p>
-          <p className="text-[14px] leading-relaxed mt-2" style={{ color: "rgba(241,240,255,0.78)" }}>
-            Comparables in your last 90 days sold around <span className="mono">$18.2K–$19.4K</span>, average 22 days held.
-            You&rsquo;re inside the band, slightly early. Hold for now — revisit at 30 days
-            and consider <span style={{ color: "#fbbf24" }}>$17,990</span> if no enquiries by then.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-6 flex flex-wrap gap-2">
-        {["lookup_vehicle_by_rego", "stock_summary", "top_makes_last_n_days"].map((t) => (
-          <span key={t} className="mono text-[10px] px-2.5 py-1 rounded-full" style={{ background: "rgba(139,92,246,0.10)", color: "#c4b5fd", border: "1px solid rgba(139,92,246,0.20)", letterSpacing: "0.04em" }}>
-            {t}()
-          </span>
-        ))}
-      </div>
     </div>
   )
 }
