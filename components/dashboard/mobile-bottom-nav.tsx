@@ -16,6 +16,7 @@ import {
   BarChart3,
   Settings,
   MessageSquare,
+  FileBarChart,
 } from "lucide-react"
 import {
   Sheet,
@@ -37,6 +38,7 @@ const more = [
   { title: "Listing Builder", href: "/dashboard/listing", icon: FileText },
   { title: "Forms", href: "/dashboard/forms", icon: FileText },
   { title: "Tasks", href: "/dashboard/tasks", icon: ListTodo },
+  { title: "Reports", href: "/dashboard/reports", icon: FileBarChart },
   { title: "Market Intel", href: "/dashboard/intel", icon: BarChart3 },
   { title: "AI Assistant", href: "/dashboard/assistant", icon: MessageSquare },
   { title: "Settings", href: "/dashboard/settings", icon: Settings },
