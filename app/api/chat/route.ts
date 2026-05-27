@@ -46,8 +46,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 })
   }
 
-  // Pull dealer context for the prompt-cached system block.
-  const [{ data: profile }, { data: stock }, { data: recent }] = await Promise.all([
+  // Pull dealer context for the prompt-cached system block. Market intel is
+  // best-effort — table may not exist yet (006 SQL not applied), in which
+  // case we just skip the section.
+  const [{ data: profile }, { data: stock }, { data: recent }, { data: intel }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
     supabase
       .from("vehicles")
@@ -67,12 +69,19 @@ export async function POST(request: NextRequest) {
           .split("T")[0]
       )
       .order("sale_date", { ascending: false }),
+    supabase
+      .from("market_intelligence_cache")
+      .select("*")
+      .order("generated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ])
 
   const systemText = buildSystemPrompt({
     profile: (profile as Profile | null) ?? null,
     stockSnapshot: (stock as Vehicle[] | null) ?? [],
     recentSales: (recent as Sale[] | null) ?? [],
+    marketIntel: (intel as Parameters<typeof buildSystemPrompt>[0]["marketIntel"]) ?? null,
   })
 
   const client = new Anthropic({ apiKey })
