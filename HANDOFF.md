@@ -1,5 +1,11 @@
 # HANDOFF — LMCT PRO
 
+> **READ FIRST if you're a fresh Claude.** The user has TWO projects on their machine:
+> - `/Users/mrahman/Desktop/LMCT PRO UPDATE/` ← **this one**, that's where you are
+> - `/Users/mrahman/Desktop/Project 1/` ← PEP (Pedagogy Evaluation Platform), unrelated
+>
+> If your CWD is anywhere except `/Users/mrahman/Desktop/LMCT PRO UPDATE/`, `cd` there before running anything. Confirm with `pwd`. Confirm this is the right repo by checking `git remote -v` shows `lmctpro2026/lmctprodemo`.
+
 You're a fresh Claude. Read this top-to-bottom — it covers everything you need. Don't re-survey the codebase.
 
 LMCT PRO is a Next.js 15 + Supabase dealer management platform for Australian Licensed Motor Car Traders. The brand is premium-automotive editorial — Fraunces serif, cream/ink/gold/emerald, Australian voice, S-Class energy. The user (Mushfiqur Rahman / `m.rahman746301@gmail.com`) is the developer building this for Sam (`sami@studyin.com.au`).
@@ -393,9 +399,19 @@ If something else is wrong, run `node --env-file=.env.local scripts/probe-schema
 
 When the user lands in the next session, your first response should be terse:
 
-> Read HANDOFF.md. Last commit `32fbac1`. State: cream `/` and dark `/v2` both live with centered editorial heroes. Founder login `m.rahman746301@gmail.com / Admin@LMCTpro2026` is provisioned. Three open tracks: (A) which landing wins, (B) Vercel env vars, (C) apply 005 SQL. What's the priority?
+> Read HANDOFF.md from `/Users/mrahman/Desktop/LMCT PRO UPDATE/`. Last commit `de0947d` (handoff rewrite) on top of `32fbac1` (V1 centered hero). State: cream `/` and dark `/v2` both live with centered editorial heroes. Founder login `m.rahman746301@gmail.com / Admin@LMCTpro2026` is provisioned. Three open tracks: (A) which landing wins, (B) Vercel env vars, (C) apply 005 SQL. What's the priority?
 
-Don't re-read everything. Don't re-survey. Don't restart. Pick up from `32fbac1`.
+Don't re-read everything. Don't re-survey. Don't restart. Pick up from `de0947d`.
+
+### The user's prompt to spawn a fresh you
+
+For copy-paste convenience, the prompt the user should give a fresh Claude is:
+
+```
+Read /Users/mrahman/Desktop/LMCT PRO UPDATE/HANDOFF.md before doing anything. Don't survey the codebase.
+```
+
+Absolute path. No ambiguity about which project.
 
 ---
 
