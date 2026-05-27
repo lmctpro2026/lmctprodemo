@@ -27,6 +27,12 @@ export interface VehicleLookupResult {
   // Pricing intelligence (vendor-dependent)
   redbookRetail: number | null
   redbookTradeIn: number | null
+  // Scanner-friendly buy/sell intelligence
+  suggestedBuy: number | null
+  suggestedSell: number | null
+  estimatedProfit: number | null
+  regoExpiry: string | null   // human-readable like "Mar 2026"
+  aiNote: string | null        // one-line MAX insight
   // Safety / status checks
   hasFinancialEncumbrance: boolean | null
   isWriteOff: boolean | null
@@ -95,7 +101,27 @@ export async function lookupVehicleByRego(
   const model = pick(modelList, seed >> 3)
   const year = 2015 + (seed % 10)             // 2015–2024
   const odometer = 20000 + ((seed >> 5) % 180000)  // 20k–200k
-  const purchaseEst = 8000 + ((seed >> 7) % 35000) // 8k–43k
+  const body = pick(BODIES, seed >> 11)
+
+  // Suggested buy: age-and-km depreciation from a notional new price.
+  const basePrice = 38000 - (2024 - year) * 2200 - (odometer / 100) * 0.8
+  const suggestedBuy = Math.max(4000, Math.round(basePrice / 500) * 500)
+  const suggestedSell = suggestedBuy + 3500 + ((seed >> 19) % 2000)
+  const estimatedProfit = suggestedSell - suggestedBuy
+
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  const regoExpiry = `${months[(seed >> 21) % 12]} ${2025 + ((seed >> 22) % 2)}`
+
+  // Hardcoded MAX one-liner per body type. Real version personalises against
+  // the dealer's market intel cache.
+  const noteByBody: Record<string, string> = {
+    SUV: `${body}s in VIC are moving in 22 days on average — solid buy at this price.`,
+    Sedan: `Sedans average 38 days on lot — fair margin, watch the days count.`,
+    Hatchback: `Small hatches turn fastest at retail; this margin is healthy.`,
+    Wagon: `Wagons are slower movers — price sharp from day one.`,
+    Ute: `Utes hold value well in VIC; this looks like a $4k+ profit opportunity.`,
+  }
+  const aiNote = noteByBody[body] ?? `${body}s typically clear in 30 days. Margin looks workable.`
 
   return {
     rego,
@@ -103,14 +129,19 @@ export async function lookupVehicleByRego(
     model,
     variant: "",
     year,
-    body: pick(BODIES, seed >> 11),
+    body,
     transmission: pick(TRANS, seed >> 13),
     fuel: pick(FUELS, seed >> 15),
     colour: pick(COLOURS, seed >> 17),
     vin: "",                                   // vendor would provide
     odometer,
-    redbookRetail: Math.round(purchaseEst * 1.18),
-    redbookTradeIn: Math.round(purchaseEst * 0.95),
+    redbookRetail: suggestedSell,
+    redbookTradeIn: Math.round(suggestedBuy * 0.92),
+    suggestedBuy,
+    suggestedSell,
+    estimatedProfit,
+    regoExpiry,
+    aiNote,
     hasFinancialEncumbrance: null,
     isWriteOff: null,
     isStolen: null,
