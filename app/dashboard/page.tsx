@@ -10,6 +10,7 @@ import {
   FileText,
   LineChart,
   Plus,
+  ScanLine,
   Sparkles,
 } from "lucide-react"
 
@@ -118,6 +119,77 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Welcome hero — only when the dealer has zero stock and zero sales.
+          First-day experience: clear next move beats an empty grid of zeros. */}
+      {vehicles.length === 0 && sales.length === 0 && (
+        <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.06] via-background to-background p-6 md:p-8">
+          <div
+            aria-hidden
+            className="absolute -top-20 -right-20 w-72 h-72 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, rgba(232,162,40,0.18) 0%, transparent 70%)", filter: "blur(40px)" }}
+          />
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-mono text-amber-500 mb-3">
+              <Sparkles className="h-3 w-3" />
+              First move
+            </div>
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-2">
+              Welcome to {dealerName}.
+            </h2>
+            <p className="text-sm md:text-[15px] text-muted-foreground max-w-2xl leading-relaxed mb-6">
+              You&rsquo;re looking at an empty yard. Once you add your first vehicle, every panel
+              below comes alive — stock, sales, profit, MAX&rsquo;s advice. Pick a starting move.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3">
+              <Link
+                href="/dashboard/scanner"
+                className="group rounded-xl border border-border hover:border-amber-500/40 bg-card hover:bg-card/80 p-4 transition-all hover:-translate-y-0.5"
+              >
+                <div className="flex items-center gap-2 text-amber-500 mb-2">
+                  <ScanLine className="h-4 w-4" />
+                  <span className="text-[10px] uppercase tracking-widest font-mono">Fastest</span>
+                </div>
+                <div className="font-semibold mb-1">Scan a plate</div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Point the camera at a rego — year, make, model, suggested buy and sell come back instantly.
+                </p>
+              </Link>
+
+              <Link
+                href="/dashboard/stock"
+                className="group rounded-xl border border-border hover:border-amber-500/40 bg-card hover:bg-card/80 p-4 transition-all hover:-translate-y-0.5"
+              >
+                <div className="flex items-center gap-2 text-amber-500 mb-2">
+                  <Plus className="h-4 w-4" />
+                  <span className="text-[10px] uppercase tracking-widest font-mono">Manual</span>
+                </div>
+                <div className="font-semibold mb-1">Add a vehicle</div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Type it in the full form — useful when you have papers in hand instead of a plate to scan.
+                </p>
+              </Link>
+
+              <Link
+                href="/dashboard/assistant"
+                className="group rounded-xl border border-border hover:border-amber-500/40 bg-card hover:bg-card/80 p-4 transition-all hover:-translate-y-0.5"
+              >
+                <div className="flex items-center gap-2 text-amber-500 mb-2">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="text-[10px] uppercase tracking-widest font-mono">Guided</span>
+                </div>
+                <div className="font-semibold mb-1">Ask {aiName} how to start</div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Tell {aiName} what your yard looks like — it&rsquo;ll suggest the cleanest import path.
+                </p>
+              </Link>
+            </div>
+            <p className="text-xs text-muted-foreground mt-5">
+              Got an Excel sheet or CSV from your old DMS? Mention it on your demo call and we&rsquo;ll import it for you.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Aged alert strip — shown only when there's something to act on */}
       {aged60.length > 0 && (
