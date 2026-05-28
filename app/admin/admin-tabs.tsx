@@ -115,9 +115,15 @@ export function AdminTabs({ data }: { data: AdminData }) {
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes admPulse {
-          0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0.18; }
-          100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
+          0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0.22; }
+          100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .adm-row-in, .adm-pulse { animation: none !important; opacity: 1 !important; transform: none !important; }
+        }
+        /* Tactile press on the AI Engine "Run aggregator" + tab nav. */
+        .adm-tab, button.adm-cta { transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), color 200ms var(--ease, ease-out); }
+        button.adm-cta:active { transform: scale(0.97); }
         .adm-scanline {
           background-image: linear-gradient(transparent 50%, rgba(255,255,255,0.018) 50%);
           background-size: 100% 2px;
@@ -610,8 +616,9 @@ function LiveFeedTab({ d }: { d: AdminData }) {
             background: `radial-gradient(circle, ${GREEN}1f 0%, transparent 70%)`,
             transform: "translate(-50%, -50%)",
             pointerEvents: "none",
-            animation: "admPulse 3.5s ease-out forwards",
+            animation: "admPulse 1.6s cubic-bezier(0.23, 1, 0.32, 1) forwards",
           }}
+          className="adm-pulse"
         />
         <div style={{ padding: "14px 18px", borderBottom: `1px solid ${RULE}`, display: "flex", justifyContent: "space-between" }}>
           <span className="adm-data" style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: GOLD }}>
@@ -1032,6 +1039,7 @@ function AIEngineTab({ cache, dealerCount }: { cache: MarketCache | null; dealer
           <SectionTitle hint="Trigger supabase/functions/market-intelligence">Run nightly analysis now</SectionTitle>
           <button
             type="button"
+            className="adm-cta"
             onClick={runNow}
             disabled={busy}
             style={{

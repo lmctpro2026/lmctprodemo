@@ -240,10 +240,19 @@ function ScanScreen({
           50% { transform: translateY(220px); opacity: 1; }
           100% { transform: translateY(0); opacity: 0.85; }
         }
-        @keyframes cornerPulse {
-          0%, 100% { opacity: 0.85; }
-          50% { opacity: 1; }
+        /* Corners glow in once on screen entry, then settle. Ambient
+           pulse-forever was nagging — Emil: don't animate things the
+           user sees the whole time they're in a view. */
+        @keyframes cornerSettle {
+          from { opacity: 0; transform: scale(0.85); }
+          to   { opacity: 0.85; transform: scale(1); }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .scan-corner, .scan-sweep { animation: none !important; }
+        }
+        /* Tactile press feedback on scanner CTAs. */
+        button.scan-cta { transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+        button.scan-cta:active { transform: scale(0.97); }
       `}</style>
 
       {/* Top bar */}
@@ -309,6 +318,7 @@ function ScanScreen({
           ).map((c, i) => (
             <div
               key={i}
+              className="scan-corner"
               style={{
                 position: "absolute",
                 top: c.t,
@@ -321,12 +331,14 @@ function ScanScreen({
                 borderBottom: c.bb ? `2px solid ${SCAN_GOLD}` : undefined,
                 borderLeft: c.bl ? `2px solid ${SCAN_GOLD}` : undefined,
                 borderRight: c.br ? `2px solid ${SCAN_GOLD}` : undefined,
-                animation: "cornerPulse 2s ease-in-out infinite",
+                opacity: 0.85,
+                animation: `cornerSettle 320ms cubic-bezier(0.23, 1, 0.32, 1) ${i * 60}ms both`,
               }}
             />
           ))}
           {/* Sweep line */}
           <div
+            className="scan-sweep"
             style={{
               position: "absolute",
               top: 0,
@@ -368,6 +380,7 @@ function ScanScreen({
           />
           <button
             type="button"
+            className="scan-cta"
             onClick={() => onCapture(typed)}
             disabled={!typed.trim()}
             style={{
@@ -439,6 +452,7 @@ function ManualScreen({ onLookup, onBack }: { onLookup: (plate: string) => void;
         </button>
         <button
           type="button"
+          className="scan-cta"
           onClick={() => onLookup(typed)}
           disabled={!typed.trim()}
           style={{
@@ -565,6 +579,7 @@ function ResultScreen({
       <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
         <button
           type="button"
+          className="scan-cta"
           onClick={onAdd}
           disabled={adding || added}
           style={{
